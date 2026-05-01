@@ -6,7 +6,7 @@ AIの環境として機能させることを前提とした、UnityでのWoodoku
 - [x] Unityで新規2Dプロジェクトを作成する。
 - [x] `BoardData` クラスを作成し、9x9の盤面状態を管理する二次元配列（`int[,] board = new int[9, 9];`）を定義する。
 - [x] `BlockData` を `ScriptableObject` として作成し、ブロックの形状を `Vector2Int` の配列（またはリスト）で定義できるようにする。
-- [ ] 代表的なブロック（1x1、3x3、L字、I字など）の `ScriptableObject` アセットを数種類作成する。
+- [x] 代表的なブロック（1x1、3x3、L字、I字など）の `ScriptableObject` アセットを数種類作成する。
 
 ## 2. 盤面（グリッド）の描画設定
 - [ ] 1マス分を表す正方形のSpriteを用意し、`Cell` プレハブを作成する。
