@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class Cell : MonoBehaviour
 {
-    [SerializeField] private GameObject sprite;
+    [SerializeField]
+    private GameObject sprite;
 
     public void Show()
     {

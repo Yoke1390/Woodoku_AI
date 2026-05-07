@@ -1,12 +1,12 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(GridLayoutGroup))]
 public class BoardUI : MonoBehaviour
 {
-    [SerializeField] private Cell cellPrefab;
+    [SerializeField]
+    private Cell cellPrefab;
 
     private List<Cell> cellList = new List<Cell>();
     private GridLayoutGroup gridLayout;
@@ -14,7 +14,7 @@ public class BoardUI : MonoBehaviour
 
     private const int GRID_SIZE = 9;
 
-    async void Start()
+    private void Start()
     {
         gridLayout = GetComponent<GridLayoutGroup>();
 
@@ -44,8 +44,16 @@ public class BoardUI : MonoBehaviour
         RectTransform rectTransform = GetComponent<RectTransform>();
         Debug.Log(rectTransform.rect.width);
         Debug.Log(rectTransform.rect.height);
-        float availableWidth = rectTransform.rect.width - gridLayout.padding.left - gridLayout.padding.right - (GRID_SIZE - 1) * gridLayout.spacing.x;
-        float availableHeight = rectTransform.rect.height - gridLayout.padding.top - gridLayout.padding.bottom - (GRID_SIZE - 1) * gridLayout.spacing.y;
+        float availableWidth =
+            rectTransform.rect.width
+            - gridLayout.padding.left
+            - gridLayout.padding.right
+            - (GRID_SIZE - 1) * gridLayout.spacing.x;
+        float availableHeight =
+            rectTransform.rect.height
+            - gridLayout.padding.top
+            - gridLayout.padding.bottom
+            - (GRID_SIZE - 1) * gridLayout.spacing.y;
 
         Debug.Log(availableWidth);
         Debug.Log(availableHeight);

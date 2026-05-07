@@ -6,5 +6,4 @@ public class BlockData : ScriptableObject
 {
     public Vector2Int[] blockCells;
     public int N_Blocks => blockCells.Length;
-
 }
