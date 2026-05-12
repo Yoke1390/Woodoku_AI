@@ -5,14 +5,25 @@ using UnityEngine.UI;
 [RequireComponent(typeof(GridLayoutGroup))]
 public class BoardUI : MonoBehaviour
 {
+    public static BoardUI Instance { get; private set; }
+
     [SerializeField]
     private Cell cellPrefab;
 
     private List<Cell> cellList = new List<Cell>();
     private GridLayoutGroup gridLayout;
-    private float cellSize;
+    public float CellSize { get; private set; }
 
     private const int GRID_SIZE = 9;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -31,7 +42,7 @@ public class BoardUI : MonoBehaviour
 
     private void InitializeBoard()
     {
-        for (int i = 0; i < 81; i++)
+        for (int i = 0; i < GRID_SIZE * GRID_SIZE; i++)
         {
             Cell newCell = Instantiate(cellPrefab, gameObject.transform);
             newCell.Hide();
@@ -57,15 +68,15 @@ public class BoardUI : MonoBehaviour
 
         Debug.Log(availableWidth);
         Debug.Log(availableHeight);
-        cellSize = Mathf.Min(availableWidth, availableHeight) / GRID_SIZE;
-        Debug.Log(cellSize);
+        CellSize = Mathf.Min(availableWidth, availableHeight) / GRID_SIZE;
+        Debug.Log(CellSize);
 
-        gridLayout.cellSize = new Vector2(cellSize, cellSize);
+        gridLayout.cellSize = new Vector2(CellSize, CellSize);
     }
 
     public void UpdateCellState(int x, int y, bool isFilled)
     {
-        int index = y * 9 + x;
+        int index = y * GRID_SIZE + x;
         if (isFilled)
         {
             cellList[index].Show();
