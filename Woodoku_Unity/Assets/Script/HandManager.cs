@@ -32,7 +32,7 @@ public class HandManager : MonoBehaviour
     private BlockData GetBlockData()
     {
         // tmp
-        return blockDatas[0];
+        return blockDatas[3];
     }
 
     private void GenerateHandBlock(int slotIndex, BlockData blockData)
