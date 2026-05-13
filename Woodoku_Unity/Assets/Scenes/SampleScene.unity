@@ -233,7 +233,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 166.53333, y: 166.53333}
+  m_SizeDelta: {x: 0, y: 166.53333}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &46505668
 MonoBehaviour:
@@ -345,7 +345,6 @@ RectTransform:
   m_Children:
   - {fileID: 17382219}
   - {fileID: 1304266723}
-  - {fileID: 507934860}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -388,7 +387,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 166.53333, y: 166.53333}
+  m_SizeDelta: {x: 0, y: 166.53333}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &198316185
 MonoBehaviour:
@@ -553,6 +552,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 464942964}
+  - component: {fileID: 464942965}
   m_Layer: 0
   m_Name: Hand Manager
   m_TagString: Untagged
@@ -569,58 +569,29 @@ Transform:
   m_GameObject: {fileID: 464942963}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -104.64301, y: 61.3141, z: -0.51388067}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &507934859
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 507934860}
-  - component: {fileID: 507934861}
-  m_Layer: 0
-  m_Name: HandBlock
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &507934860
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 507934859}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -5396.3633}
-  m_LocalScale: {x: 59.95959, y: 59.95959, z: 59.95959}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 173548087}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &507934861
+--- !u!114 &464942965
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 507934859}
+  m_GameObject: {fileID: 464942963}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1fa7da132817f4b4aa3dc4ab63f5d900, type: 3}
+  m_Script: {fileID: 11500000, guid: 3f0d8aa088ef745ada3295c13ce94e49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blockPiecePrefab: {fileID: 610971807109271258, guid: 932768556a3dd45a0a4f76ed7c24b305, type: 3}
-  sampleBlockData: {fileID: 11400000, guid: caf088f1ed6984bd2809f432a64e56f0, type: 2}
+  handSlots:
+  - {fileID: 46505667}
+  - {fileID: 198316184}
+  - {fileID: 582910760}
+  handBlockPrefab: {fileID: 708222126519173319, guid: dd180edee34b24059b7d913bf2f76c06, type: 3}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -793,7 +764,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 166.53333, y: 166.53333}
+  m_SizeDelta: {x: 0, y: 166.53333}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &582910761
 MonoBehaviour:
@@ -1077,7 +1048,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 539.59595, y: 539.59595}
+  m_SizeDelta: {x: 0, y: 539.59595}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &765004315
 MonoBehaviour:
@@ -1105,7 +1076,7 @@ GameObject:
   - component: {fileID: 1005581937}
   - component: {fileID: 1005581938}
   m_Layer: 5
-  m_Name: BoardPanel
+  m_Name: BoardUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1231,6 +1202,52 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &1547975428
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1547975429}
+  - component: {fileID: 1547975430}
+  m_Layer: 0
+  m_Name: WoodokuGameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1547975429
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547975428}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1547975430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547975428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb811e650a43c4d998d48f6c3528c667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boardUI: {fileID: 1005581937}
+  handManager: {fileID: 464942965}
 --- !u!1 &1959687185
 GameObject:
   m_ObjectHideFlags: 0
@@ -1314,3 +1331,4 @@ SceneRoots:
   - {fileID: 619394802}
   - {fileID: 173548087}
   - {fileID: 464942964}
+  - {fileID: 1547975429}

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,7 +26,7 @@ public class BoardUI : MonoBehaviour
         Instance = this;
     }
 
-    private void Start()
+    public void Initialize()
     {
         gridLayout = GetComponent<GridLayoutGroup>();
 
@@ -33,14 +34,14 @@ public class BoardUI : MonoBehaviour
         Canvas.ForceUpdateCanvases();
 
         AdjustCellSize();
-        InitializeBoard();
+        InitializeCells();
 
         // test
         UpdateCellState(0, 1, true);
         UpdateCellState(2, 7, true);
     }
 
-    private void InitializeBoard()
+    private void InitializeCells()
     {
         for (int i = 0; i < GRID_SIZE * GRID_SIZE; i++)
         {
@@ -53,8 +54,6 @@ public class BoardUI : MonoBehaviour
     private void AdjustCellSize()
     {
         RectTransform rectTransform = GetComponent<RectTransform>();
-        Debug.Log(rectTransform.rect.width);
-        Debug.Log(rectTransform.rect.height);
         float availableWidth =
             rectTransform.rect.width
             - gridLayout.padding.left
@@ -66,10 +65,7 @@ public class BoardUI : MonoBehaviour
             - gridLayout.padding.bottom
             - (GRID_SIZE - 1) * gridLayout.spacing.y;
 
-        Debug.Log(availableWidth);
-        Debug.Log(availableHeight);
         CellSize = Mathf.Min(availableWidth, availableHeight) / GRID_SIZE;
-        Debug.Log(CellSize);
 
         gridLayout.cellSize = new Vector2(CellSize, CellSize);
     }

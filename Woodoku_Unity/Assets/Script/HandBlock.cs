@@ -6,26 +6,30 @@ public class HandBlock : MonoBehaviour
 {
     [SerializeField]
     private BlockPiece blockPiecePrefab;
-    private List<BlockPiece> blockPieces;
-
-    [SerializeField]
-    private BlockData sampleBlockData;
-
-    private void Start()
-    {
-        Initialize(sampleBlockData);
-    }
+    private BlockPiece[] blockPieces;
 
     public void Initialize(BlockData blockData)
     {
+        blockPieces = new BlockPiece[blockData.N_Blocks];
+
         float cellSize = BoardUI.Instance.CellSize;
-        foreach (Vector2Int blockPosition in blockData.BlockCells)
+
+        if (cellSize <= 0)
         {
+            Debug.Log("Cell size <= 0");
+            cellSize = 1f;
+        }
+
+        for (int i = 0; i < blockData.N_Blocks; i++)
+        {
+            Vector2Int blockPosition = blockData.BlockCells[i];
             BlockPiece newBlockPiece = Instantiate(blockPiecePrefab, gameObject.transform);
             RectTransform newBlockPieceRectTransform = newBlockPiece.GetComponent<RectTransform>();
 
             newBlockPieceRectTransform.anchoredPosition = (Vector2)blockPosition * cellSize;
             newBlockPieceRectTransform.sizeDelta = Vector2.one * cellSize;
+
+            blockPieces[i] = newBlockPiece;
         }
     }
 }
