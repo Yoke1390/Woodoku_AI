@@ -13,6 +13,9 @@ public class WoodokuGameManager : MonoBehaviour
     [SerializeField]
     private HandManager handManager;
 
+    [SerializeField]
+    private GameSetting gameSetting;
+
     private BoardData boardData;
 
     void Awake()
@@ -26,9 +29,8 @@ public class WoodokuGameManager : MonoBehaviour
 
     void Start()
     {
-        boardData = new BoardData();
-
-        boardUI.Initialize();
+        boardData = new BoardData(gameSetting.GridSize);
+        boardUI.Initialize(boardData);
         handManager.Initialize();
 
         boardData.CellUpdate += boardUI.BoradData_OnCellUpdate;
@@ -38,12 +40,8 @@ public class WoodokuGameManager : MonoBehaviour
         boardData.SetCell(2, 7, 1);
     }
 
-    public bool CanPlaceBlock(BlockData blockData, BoardPosition? blockBaseBoardPosition)
+    public bool CanPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
     {
-        if (blockBaseBoardPosition.HasValue)
-        {
-            return boardData.CanPlaceBlock(blockData, blockBaseBoardPosition.Value);
-        }
-        return false;
+        return boardData.CanPlaceBlock(blockData, blockBaseBoardPosition);
     }
 }

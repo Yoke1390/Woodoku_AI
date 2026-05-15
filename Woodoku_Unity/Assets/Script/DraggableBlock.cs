@@ -40,7 +40,7 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         {
             transform.localPosition = localPointerPosition;
         }
-        BoardPosition? blockBaseBoardPosition = BoardUI.Instance.GetBlockBaseBoardPosition(
+        BoardPosition blockBaseBoardPosition = BoardUI.Instance.GetBlockBaseBoardPosition(
             eventData,
             handBlock.CenterCellOffset
         );
@@ -61,10 +61,6 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        BoardPosition? blockBaseBoardPosition = BoardUI.Instance.GetBlockBaseBoardPosition(
-            eventData,
-            handBlock.CenterCellOffset
-        );
         canvasGroup.blocksRaycasts = true;
     }
 }

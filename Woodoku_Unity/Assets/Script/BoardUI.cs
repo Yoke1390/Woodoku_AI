@@ -10,7 +10,7 @@ public class BoardUI : MonoBehaviour
 {
     public static BoardUI Instance { get; private set; }
 
-    public BoardData boardData;
+    private BoardData boardData;
 
     [SerializeField]
     private Cell cellPrefab;
@@ -21,8 +21,6 @@ public class BoardUI : MonoBehaviour
     private RectTransform rectTransform;
     private GridLayoutGroup gridLayout;
 
-    private const int GRID_SIZE = 9;
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -32,13 +30,17 @@ public class BoardUI : MonoBehaviour
         Instance = this;
     }
 
-    public void Initialize()
+    public void Initialize(BoardData boardData)
     {
+        this.boardData = boardData;
         rectTransform = GetComponent<RectTransform>();
         gridLayout = GetComponent<GridLayoutGroup>();
 
         // XY座標の向きを合わせる (x：右が正, y：上が正)
         gridLayout.startCorner = GridLayoutGroup.Corner.LowerLeft;
+
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        gridLayout.constraintCount = boardData.BoardSize;
 
         // UIのレイアウト計算（Horizontal Layout Groupなど）を強制的に完了させる
         Canvas.ForceUpdateCanvases();
@@ -49,7 +51,8 @@ public class BoardUI : MonoBehaviour
 
     private void InitializeCells()
     {
-        for (int i = 0; i < GRID_SIZE * GRID_SIZE; i++)
+        int totalCellNumber = boardData.BoardSize * boardData.BoardSize;
+        for (int i = 0; i < totalCellNumber; i++)
         {
             Cell newCell = Instantiate(cellPrefab, gameObject.transform);
             newCell.Hide();
@@ -59,25 +62,26 @@ public class BoardUI : MonoBehaviour
 
     private void AdjustCellSize()
     {
+        int boardSize = boardData.BoardSize;
         float availableWidth =
             rectTransform.rect.width
             - gridLayout.padding.left
             - gridLayout.padding.right
-            - (GRID_SIZE - 1) * gridLayout.spacing.x;
+            - (boardSize - 1) * gridLayout.spacing.x;
         float availableHeight =
             rectTransform.rect.height
             - gridLayout.padding.top
             - gridLayout.padding.bottom
-            - (GRID_SIZE - 1) * gridLayout.spacing.y;
+            - (boardSize - 1) * gridLayout.spacing.y;
 
-        CellSize = Mathf.Min(availableWidth, availableHeight) / GRID_SIZE;
+        CellSize = Mathf.Min(availableWidth, availableHeight) / boardSize;
 
         gridLayout.cellSize = new Vector2(CellSize, CellSize);
     }
 
     public void UpdateCellState(int x, int y, bool isFilled)
     {
-        int index = y * GRID_SIZE + x;
+        int index = y * boardData.BoardSize + x;
         if (isFilled)
         {
             cellList[index].Show();
@@ -89,7 +93,7 @@ public class BoardUI : MonoBehaviour
     }
 
     // return BoardPosition for (0,0) of BoardData
-    public BoardPosition? GetBlockBaseBoardPosition(
+    public BoardPosition GetBlockBaseBoardPosition(
         PointerEventData eventData,
         Vector2 centerCellOffset
     )
@@ -113,18 +117,10 @@ public class BoardUI : MonoBehaviour
                 blockBaseScreenLocalPosition.y / CellSize
             );
 
-            if (
-                BoardPosition.IsValid(
-                    new Vector2Int(blockBaseBoardPositionX, blockBaseBoardPositionY)
-                )
-            )
-            {
-                return new BoardPosition(blockBaseBoardPositionX, blockBaseBoardPositionY);
-            }
+            return new BoardPosition(blockBaseBoardPositionX, blockBaseBoardPositionY);
         }
 
-        Debug.LogWarning("Block Base out of range");
-        return null;
+        return new BoardPosition(-1, -1);
     }
 
     internal void BoradData_OnCellUpdate(object sender, BoardData.CellUpdateData data)

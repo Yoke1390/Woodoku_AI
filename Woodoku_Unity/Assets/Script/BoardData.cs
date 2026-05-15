@@ -3,25 +3,29 @@ using UnityEngine;
 
 public class BoardData
 {
+    public int GridSize { get; }
+    public int BoardSize { get; }
     private int[,] board;
 
     public event EventHandler<CellUpdateData> CellUpdate;
 
-    public BoardData()
+    public BoardData(int gridSize)
     {
+        GridSize = gridSize;
+        BoardSize = GridSize * GridSize;
         Reset();
     }
 
     public void Reset()
     {
-        board = new int[9, 9];
+        board = new int[BoardSize, BoardSize];
     }
 
-    public int GetCell(int x, int y)
+    public int GetCell(BoardPosition boardPosition)
     {
-        if (0 <= x && x <= 8 && 0 <= y && y <= 8)
+        if (IsValid(boardPosition))
         {
-            return board[x, y];
+            return board[boardPosition.x, boardPosition.y];
         }
         else
         {
@@ -30,14 +34,16 @@ public class BoardData
         }
     }
 
-    public int GetCell(Vector2Int pos)
+    public int GetCell(int x, int y)
     {
-        return GetCell(pos.x, pos.y);
+        return GetCell(new BoardPosition(x, y));
     }
 
-    public void SetCell(int x, int y, int value = 1)
+    public void SetCell(BoardPosition boardPosition, int value = 1)
     {
-        if (0 <= x && x <= 8 && 0 <= y && y <= 8)
+        int x = boardPosition.x;
+        int y = boardPosition.y;
+        if (IsValid(boardPosition))
         {
             board[x, y] = value;
             CellUpdate?.Invoke(this, new CellUpdateData(x, y, value));
@@ -48,16 +54,17 @@ public class BoardData
         }
     }
 
-    public void SetCell(Vector2Int pos, int value = 1)
+    public void SetCell(int x, int y, int value = 1)
     {
-        SetCell(pos.x, pos.y, value);
+        var boardPosition = new BoardPosition(x, y);
+        SetCell(boardPosition, value);
     }
 
     public bool CanPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
     {
         foreach (BoardPosition cell in blockData.BlockCells)
         {
-            Vector2Int targetPos = cell + blockBaseBoardPosition;
+            BoardPosition targetPos = cell + blockBaseBoardPosition;
             int cellValue = GetCell(targetPos);
             Debug.Log($"Target Pos: {targetPos.x}, {targetPos.y} value: {cellValue}");
             if (cellValue != 0)
@@ -66,6 +73,14 @@ public class BoardData
             }
         }
         return true;
+    }
+
+    public bool IsValid(BoardPosition boardPosition)
+    {
+        int x = boardPosition.x;
+        int y = boardPosition.y;
+
+        return 0 <= x && x < BoardSize && 0 <= y && y < BoardSize;
     }
 
     public readonly struct CellUpdateData
