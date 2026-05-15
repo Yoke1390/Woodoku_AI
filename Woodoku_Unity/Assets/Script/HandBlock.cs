@@ -51,4 +51,9 @@ public class HandBlock : MonoBehaviour
     {
         blockPiecesParent.localScale = scale * Vector3.one;
     }
+
+    public void ResetScale()
+    {
+        blockPiecesParent.localScale = inSlotCellSizeScale * Vector3.one;
+    }
 }

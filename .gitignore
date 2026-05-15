@@ -52,3 +52,6 @@ sysinfo.txt
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# AI
+.claude/

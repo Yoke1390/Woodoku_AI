@@ -40,27 +40,41 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         {
             transform.localPosition = localPointerPosition;
         }
-        BoardPosition blockBaseBoardPosition = BoardUI.Instance.GetBlockBaseBoardPosition(
-            eventData,
-            handBlock.CenterCellOffset
-        );
-
-        bool canPlace = WoodokuGameManager.Instance.CanPlaceBlock(
-            handBlock.BlockData,
-            blockBaseBoardPosition
-        );
-        if (canPlace)
-        {
-            Debug.Log("Block Placeable");
-        }
-        else
-        {
-            Debug.Log("Block not Placeable");
-        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        bool isPlaceSuccess = TryPlaceBlock(eventData);
+        if (isPlaceSuccess)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            canvasGroup.blocksRaycasts = true;
+            transform.localPosition = initialLocalPosition;
+            handBlock.ResetScale();
+        }
+    }
+
+    private bool TryPlaceBlock(PointerEventData eventData)
+    {
+        BoardPosition blockBaseBoardPosition = BoardUI.Instance.GetBlockBaseBoardPosition(
+            eventData,
+            handBlock.CenterCellOffset
+        );
+        bool isPlaceSuccess = WoodokuGameManager.Instance.TryPlaceBlock(
+            handBlock.BlockData,
+            blockBaseBoardPosition
+        );
+
+        return isPlaceSuccess;
+    }
+
+    public void Reset()
+    {
         canvasGroup.blocksRaycasts = true;
+        transform.localPosition = initialLocalPosition;
+        handBlock.ResetScale();
     }
 }

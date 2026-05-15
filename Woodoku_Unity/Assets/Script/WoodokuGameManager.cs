@@ -44,4 +44,23 @@ public class WoodokuGameManager : MonoBehaviour
     {
         return boardData.CanPlaceBlock(blockData, blockBaseBoardPosition);
     }
+
+    public bool TryPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
+    {
+        bool canPlace = CanPlaceBlock(blockData, blockBaseBoardPosition);
+        if (canPlace)
+        {
+            PlaceBlock(blockData, blockBaseBoardPosition);
+        }
+        return canPlace;
+    }
+
+    private void PlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
+    {
+        foreach (BoardPosition blockPiecePosition in blockData.BlockCells)
+        {
+            BoardPosition pos = blockBaseBoardPosition + blockPiecePosition;
+            boardData.SetCell(pos, 1);
+        }
+    }
 }
