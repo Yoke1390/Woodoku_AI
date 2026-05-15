@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -6,15 +7,25 @@ using UnityEngine.EventSystems;
 public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     private HandBlock handBlock;
+    private BlockData blockData;
     private CanvasGroup canvasGroup;
 
     private RectTransform parentRectTransform;
     private Vector2 initialLocalPosition;
 
+    private DropHandler _onDropRequested;
+
+    public void SetDropHandler(DropHandler handler)
+    {
+        _onDropRequested = handler;
+    }
+
     private void Start()
     {
         handBlock = GetComponent<HandBlock>();
         canvasGroup = GetComponent<CanvasGroup>();
+
+        blockData = handBlock.BlockData;
 
         parentRectTransform = transform.parent.GetComponent<RectTransform>();
         initialLocalPosition = transform.localPosition;
@@ -44,37 +55,23 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        bool isPlaceSuccess = TryPlaceBlock(eventData);
-        if (isPlaceSuccess)
+        bool success = _onDropRequested?.Invoke(eventData, blockData) ?? false;
+        if (success)
         {
             Destroy(gameObject);
         }
         else
         {
-            canvasGroup.blocksRaycasts = true;
-            transform.localPosition = initialLocalPosition;
-            handBlock.ResetScale();
+            ResetBlock();
         }
     }
 
-    private bool TryPlaceBlock(PointerEventData eventData)
-    {
-        BoardPosition blockBaseBoardPosition = BoardUI.Instance.GetBlockBaseBoardPosition(
-            eventData,
-            handBlock.CenterCellOffset
-        );
-        bool isPlaceSuccess = WoodokuGameManager.Instance.TryPlaceBlock(
-            handBlock.BlockData,
-            blockBaseBoardPosition
-        );
-
-        return isPlaceSuccess;
-    }
-
-    public void Reset()
+    private void ResetBlock()
     {
         canvasGroup.blocksRaycasts = true;
         transform.localPosition = initialLocalPosition;
         handBlock.ResetScale();
     }
 }
+
+public delegate bool DropHandler(PointerEventData eventData, BlockData blockData);

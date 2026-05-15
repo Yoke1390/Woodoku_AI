@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class HandManager : MonoBehaviour
@@ -12,6 +9,8 @@ public class HandManager : MonoBehaviour
     private HandBlock handBlockPrefab;
 
     private BlockData[] blockDatas;
+    private DropHandler _dropHandler;
+    private float _cellSize;
 
     void Awake()
     {
@@ -20,8 +19,10 @@ public class HandManager : MonoBehaviour
         Debug.Log($"{blockDatas.Length} Block Data was found");
     }
 
-    public void Initialize()
+    public void Initialize(DropHandler dropHandler, float cellSize)
     {
+        _dropHandler = dropHandler;
+        _cellSize = cellSize;
         for (int i = 0; i < handSlots.Length; i++)
         {
             BlockData blockData = GetBlockData();
@@ -38,6 +39,9 @@ public class HandManager : MonoBehaviour
     private void GenerateHandBlock(int slotIndex, BlockData blockData)
     {
         HandBlock newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
-        newHandBlock.Initialize(blockData);
+        newHandBlock.Initialize(blockData, _cellSize);
+
+        var draggableBlock = newHandBlock.GetComponent<DraggableBlock>();
+        draggableBlock.SetDropHandler(_dropHandler);
     }
 }

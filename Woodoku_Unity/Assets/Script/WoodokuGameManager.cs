@@ -2,11 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class WoodokuGameManager : MonoBehaviour
 {
-    public static WoodokuGameManager Instance = null;
-
     [SerializeField]
     private BoardUI boardUI;
 
@@ -18,26 +17,33 @@ public class WoodokuGameManager : MonoBehaviour
 
     private BoardData boardData;
 
-    void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-        }
-        Instance = this;
-    }
-
     void Start()
     {
         boardData = new BoardData(gameSetting.GridSize);
         boardUI.Initialize(boardData);
-        handManager.Initialize();
+        handManager.Initialize(HandleDropRequest, boardUI.CellSize);
 
         boardData.CellUpdate += boardUI.BoradData_OnCellUpdate;
 
         // test
         boardData.SetCell(0, 0, 1);
         boardData.SetCell(2, 7, 1);
+    }
+
+    private bool HandleDropRequest(PointerEventData eventData, BlockData blockData)
+    {
+        if (
+            boardUI.TryScreenPointToBoardPosition(
+                eventData.position,
+                eventData.pressEventCamera,
+                blockData.Center,
+                out BoardPosition blockBaseBoardPosition
+            )
+        )
+        {
+            return TryPlaceBlock(blockData, blockBaseBoardPosition);
+        }
+        return false;
     }
 
     public bool CanPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)

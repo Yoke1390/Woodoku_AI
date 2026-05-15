@@ -8,8 +8,6 @@ using UnityEngine.UI;
 [RequireComponent(typeof(RectTransform))]
 public class BoardUI : MonoBehaviour
 {
-    public static BoardUI Instance { get; private set; }
-
     private BoardData boardData;
 
     [SerializeField]
@@ -20,15 +18,6 @@ public class BoardUI : MonoBehaviour
 
     private RectTransform rectTransform;
     private GridLayoutGroup gridLayout;
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-        }
-        Instance = this;
-    }
 
     public void Initialize(BoardData boardData)
     {
@@ -92,40 +81,39 @@ public class BoardUI : MonoBehaviour
         }
     }
 
-    // return BoardPosition for (0,0) of BoardData
-    public BoardPosition GetBlockBaseBoardPosition(
-        PointerEventData eventData,
-        Vector2 centerCellOffset
+    internal void BoradData_OnCellUpdate(object sender, BoardData.CellUpdateData data)
+    {
+        bool isFilled = data.Value == 1;
+        UpdateCellState(data.X, data.Y, isFilled);
+    }
+
+    public bool TryScreenPointToBoardPosition(
+        Vector2 screenPoint,
+        Camera cam,
+        Vector2 centerCellOffset,
+        out BoardPosition boardPosition
     )
     {
         Vector2 localOffset = centerCellOffset * CellSize;
         if (
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 rectTransform,
-                eventData.position,
-                eventData.pressEventCamera,
+                screenPoint,
+                cam,
                 out Vector2 localPointerPosition
             )
         )
         {
-            Vector2 blockBaseScreenLocalPosition = localPointerPosition - localOffset;
+            Vector2 screenLocalPosition = localPointerPosition - localOffset;
 
-            int blockBaseBoardPositionX = Mathf.FloorToInt(
-                blockBaseScreenLocalPosition.x / CellSize
-            );
-            int blockBaseBoardPositionY = Mathf.FloorToInt(
-                blockBaseScreenLocalPosition.y / CellSize
-            );
+            int boardPositionX = Mathf.FloorToInt(screenLocalPosition.x / CellSize);
+            int boardPositionY = Mathf.FloorToInt(screenLocalPosition.y / CellSize);
 
-            return new BoardPosition(blockBaseBoardPositionX, blockBaseBoardPositionY);
+            boardPosition = new BoardPosition(boardPositionX, boardPositionY);
+            return true;
         }
 
-        return new BoardPosition(-1, -1);
-    }
-
-    internal void BoradData_OnCellUpdate(object sender, BoardData.CellUpdateData data)
-    {
-        bool isFilled = data.Value == 1;
-        UpdateCellState(data.X, data.Y, isFilled);
+        boardPosition = new BoardPosition(-1, -1);
+        return false;
     }
 }
