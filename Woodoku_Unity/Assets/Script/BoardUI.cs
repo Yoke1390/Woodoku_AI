@@ -1,19 +1,25 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(GridLayoutGroup))]
+[RequireComponent(typeof(RectTransform))]
 public class BoardUI : MonoBehaviour
 {
     public static BoardUI Instance { get; private set; }
+
+    public BoardData boardData;
 
     [SerializeField]
     private Cell cellPrefab;
 
     private List<Cell> cellList = new List<Cell>();
-    private GridLayoutGroup gridLayout;
     public float CellSize { get; private set; }
+
+    private RectTransform rectTransform;
+    private GridLayoutGroup gridLayout;
 
     private const int GRID_SIZE = 9;
 
@@ -28,17 +34,17 @@ public class BoardUI : MonoBehaviour
 
     public void Initialize()
     {
+        rectTransform = GetComponent<RectTransform>();
         gridLayout = GetComponent<GridLayoutGroup>();
+
+        // XY座標の向きを合わせる (x：右が正, y：上が正)
+        gridLayout.startCorner = GridLayoutGroup.Corner.LowerLeft;
 
         // UIのレイアウト計算（Horizontal Layout Groupなど）を強制的に完了させる
         Canvas.ForceUpdateCanvases();
 
         AdjustCellSize();
         InitializeCells();
-
-        // test
-        UpdateCellState(0, 1, true);
-        UpdateCellState(2, 7, true);
     }
 
     private void InitializeCells()
@@ -53,7 +59,6 @@ public class BoardUI : MonoBehaviour
 
     private void AdjustCellSize()
     {
-        RectTransform rectTransform = GetComponent<RectTransform>();
         float availableWidth =
             rectTransform.rect.width
             - gridLayout.padding.left
@@ -81,5 +86,50 @@ public class BoardUI : MonoBehaviour
         {
             cellList[index].Hide();
         }
+    }
+
+    // return BoardPosition for (0,0) of BoardData
+    public BoardPosition? GetBlockBaseBoardPosition(
+        PointerEventData eventData,
+        Vector2 centerCellOffset
+    )
+    {
+        Vector2 localOffset = centerCellOffset * CellSize;
+        if (
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                rectTransform,
+                eventData.position,
+                eventData.pressEventCamera,
+                out Vector2 localPointerPosition
+            )
+        )
+        {
+            Vector2 blockBaseScreenLocalPosition = localPointerPosition - localOffset;
+
+            int blockBaseBoardPositionX = Mathf.FloorToInt(
+                blockBaseScreenLocalPosition.x / CellSize
+            );
+            int blockBaseBoardPositionY = Mathf.FloorToInt(
+                blockBaseScreenLocalPosition.y / CellSize
+            );
+
+            if (
+                BoardPosition.IsValid(
+                    new Vector2Int(blockBaseBoardPositionX, blockBaseBoardPositionY)
+                )
+            )
+            {
+                return new BoardPosition(blockBaseBoardPositionX, blockBaseBoardPositionY);
+            }
+        }
+
+        Debug.LogWarning("Block Base out of range");
+        return null;
+    }
+
+    internal void BoradData_OnCellUpdate(object sender, BoardData.CellUpdateData data)
+    {
+        bool isFilled = data.Value == 1;
+        UpdateCellState(data.X, data.Y, isFilled);
     }
 }

@@ -8,32 +8,47 @@ public class HandBlock : MonoBehaviour
     private BlockPiece blockPiecePrefab;
 
     [SerializeField]
+    private Transform blockPiecesParent;
+
+    [SerializeField]
     private float inSlotCellSizeScale = 0.5f;
     private BlockPiece[] blockPieces;
 
+    public Vector2 CenterCellOffset { get; private set; }
+    public BlockData BlockData { get; private set; }
+
     public void Initialize(BlockData blockData)
     {
+        BlockData = blockData;
         blockPieces = new BlockPiece[blockData.N_Blocks];
 
-        float cellSize = BoardUI.Instance.CellSize * inSlotCellSizeScale;
+        float cellSize = BoardUI.Instance.CellSize;
         if (cellSize <= 0)
         {
             Debug.Log("Cell size <= 0");
             cellSize = 1f;
         }
 
-        Vector2 centerOffset = blockData.Center;
+        CenterCellOffset = blockData.Center;
 
         for (int i = 0; i < blockData.N_Blocks; i++)
         {
-            Vector2 blockPosition = blockData.BlockCells[i];
-            BlockPiece newBlockPiece = Instantiate(blockPiecePrefab, gameObject.transform);
+            BoardPosition blockPosition = blockData.BlockCells[i];
+            BlockPiece newBlockPiece = Instantiate(blockPiecePrefab, blockPiecesParent);
             RectTransform newBlockPieceRectTransform = newBlockPiece.GetComponent<RectTransform>();
 
-            newBlockPieceRectTransform.anchoredPosition = (blockPosition - centerOffset) * cellSize;
+            newBlockPieceRectTransform.anchoredPosition =
+                (blockPosition - CenterCellOffset) * cellSize;
             newBlockPieceRectTransform.sizeDelta = Vector2.one * cellSize;
 
             blockPieces[i] = newBlockPiece;
         }
+
+        blockPiecesParent.localScale = inSlotCellSizeScale * Vector3.one;
+    }
+
+    public void SetScale(float scale)
+    {
+        blockPiecesParent.localScale = scale * Vector3.one;
     }
 }

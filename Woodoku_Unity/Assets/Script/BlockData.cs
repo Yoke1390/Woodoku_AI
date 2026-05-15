@@ -7,19 +7,34 @@ public class BlockData : ScriptableObject
 {
     [SerializeField]
     private Vector2Int[] blockCells;
-
-    public IReadOnlyList<Vector2Int> BlockCells => blockCells;
     public int N_Blocks => blockCells.Length;
 
-    private Vector2? cachedCenter = null;
+    private BoardPosition[] _cachedBlockCells = null;
+    public IReadOnlyList<BoardPosition> BlockCells
+    {
+        get
+        {
+            if (_cachedBlockCells == null)
+            {
+                _cachedBlockCells = new BoardPosition[N_Blocks];
+                for (int i = 0; i < N_Blocks; i++)
+                {
+                    _cachedBlockCells[i] = blockCells[i];
+                }
+            }
+            return _cachedBlockCells;
+        }
+    }
+
+    private Vector2? _cachedCenter = null;
 
     public Vector2 Center
     {
         get
         {
-            if (cachedCenter.HasValue)
+            if (_cachedCenter.HasValue)
             {
-                return cachedCenter.Value;
+                return _cachedCenter.Value;
             }
 
             if (blockCells == null || blockCells.Length == 0)
@@ -35,8 +50,16 @@ public class BlockData : ScriptableObject
             float centerX = (maxX + minX) / 2f;
             float centerY = (maxY + minY) / 2f;
 
-            cachedCenter = new Vector2(centerX, centerY);
-            return cachedCenter.Value;
+            _cachedCenter = new Vector2(centerX, centerY);
+            return _cachedCenter.Value;
         }
+    }
+
+    // インスペクターの値が変更されたら呼ばれる
+    private void OnValidate()
+    {
+        // 値が変わったので、次回呼ばれた時に作り直すように null に戻しておく
+        _cachedBlockCells = null;
+        _cachedCenter = null;
     }
 }
