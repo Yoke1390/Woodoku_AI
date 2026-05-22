@@ -26,8 +26,14 @@ public class WoodokuGameManager : MonoBehaviour
         boardData.CellUpdate += boardUI.BoradData_OnCellUpdate;
 
         // test
-        boardData.SetCell(0, 0, 1);
-        boardData.SetCell(2, 7, 1);
+        boardData.SetCell(2, 0);
+        boardData.SetCell(2, 1);
+        boardData.SetCell(2, 2);
+        boardData.SetCell(2, 3);
+        boardData.SetCell(2, 4);
+        boardData.SetCell(2, 6);
+        boardData.SetCell(2, 7);
+        boardData.SetCell(2, 8);
     }
 
     private bool HandleDropRequest(PointerEventData eventData, BlockData blockData)

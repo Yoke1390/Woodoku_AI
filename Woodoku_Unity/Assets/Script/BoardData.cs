@@ -1,11 +1,20 @@
 using System;
-using UnityEngine;
+using System.Collections.Generic;
 
 public class BoardData
 {
     public int GridSize { get; }
     public int BoardSize { get; }
-    private int[,] board;
+
+    // for performance, sbyte can be considered
+    public enum CellState
+    {
+        Empty = 0,
+        Filled = 1,
+        OutOfBoard = -1,
+    }
+
+    private CellState[,] board;
 
     public event EventHandler<CellUpdateData> CellUpdate;
 
@@ -18,10 +27,10 @@ public class BoardData
 
     public void Reset()
     {
-        board = new int[BoardSize, BoardSize];
+        board = new CellState[BoardSize, BoardSize];
     }
 
-    public int GetCell(BoardPosition boardPosition)
+    public CellState GetCell(BoardPosition boardPosition)
     {
         if (IsInBoard(boardPosition))
         {
@@ -29,24 +38,23 @@ public class BoardData
         }
         else
         {
-            // Invalid index
-            return -1;
+            return CellState.OutOfBoard;
         }
     }
 
-    public int GetCell(int x, int y)
+    public CellState GetCell(int x, int y)
     {
         return GetCell(new BoardPosition(x, y));
     }
 
-    public void SetCell(BoardPosition boardPosition, int value = 1)
+    public void SetCell(BoardPosition boardPosition, CellState state = CellState.Filled)
     {
         int x = boardPosition.x;
         int y = boardPosition.y;
         if (IsInBoard(boardPosition))
         {
-            board[x, y] = value;
-            CellUpdate?.Invoke(this, new CellUpdateData(x, y, value));
+            board[x, y] = state;
+            CellUpdate?.Invoke(this, new CellUpdateData(x, y, state));
         }
         else
         {
@@ -54,28 +62,20 @@ public class BoardData
         }
     }
 
-    public void SetCell(int x, int y, int value = 1)
+    public void SetCell(int x, int y, CellState state = CellState.Filled)
     {
-        var boardPosition = new BoardPosition(x, y);
-        SetCell(boardPosition, value);
+        BoardPosition boardPosition = new(x, y);
+        SetCell(boardPosition, state);
     }
 
     public bool CanPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
     {
         foreach (BlockOffset cellOffset in blockData.BlockCells)
         {
-            if (TryOffset(blockBaseBoardPosition, cellOffset, out BoardPosition targetPos))
+            BoardPosition targetPos = blockBaseBoardPosition + cellOffset;
+            if (GetCell(targetPos) != CellState.Empty)
             {
-                int cellValue = GetCell(targetPos);
-                if (cellValue != 0)
-                {
-                    // target pos is filled
-                    return false;
-                }
-            }
-            else
-            {
-                // base + offset out of board
+                // OutOfBoard or Filled
                 return false;
             }
         }
@@ -87,19 +87,22 @@ public class BoardData
         bool canPlace = CanPlaceBlock(blockData, blockBaseBoardPosition);
         if (canPlace)
         {
-            PlaceBlock(blockData, blockBaseBoardPosition);
+            PlaceBlockAndClear(blockData, blockBaseBoardPosition);
         }
         return canPlace;
     }
 
-    private void PlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
+    private void PlaceBlockAndClear(BlockData blockData, BoardPosition blockBaseBoardPosition)
     {
+        HashSet<BoardPosition> cellsToBeCleared = new();
         foreach (BlockOffset blockOffset in blockData.BlockCells)
         {
             // called after validation
             BoardPosition pos = blockBaseBoardPosition + blockOffset;
-            SetCell(pos, 1);
+            SetCell(pos, CellState.Filled);
         }
+
+        ClearBlocks();
     }
 
     public bool TryOffset(
@@ -130,17 +133,135 @@ public class BoardData
         return 0 <= x && x < BoardSize && 0 <= y && y < BoardSize;
     }
 
+    private void ClearBlocks()
+    {
+        HashSet<BoardPosition> cellsToClear = new();
+
+        void AddClearCellsAndCount(HashSet<BoardPosition> newSet)
+        {
+            if (newSet.Count > 0)
+            {
+                cellsToClear.UnionWith(newSet);
+                // call score count
+            }
+        }
+
+        for (int x = 0; x < BoardSize; x++)
+        {
+            AddClearCellsAndCount(GetCellsToClearWithX(x));
+        }
+        for (int y = 0; y < BoardSize; y++)
+        {
+            AddClearCellsAndCount(GetCellsToClearWithY(y));
+        }
+        for (int gridX = 0; gridX < GridSize; gridX++)
+        {
+            for (int gridY = 0; gridY < GridSize; gridY++)
+            {
+                AddClearCellsAndCount(GetCellsToClearWithGrid(gridX, gridY));
+            }
+        }
+
+        foreach (BoardPosition pos in cellsToClear)
+        {
+            SetCell(pos, CellState.Empty);
+        }
+    }
+
+    private HashSet<BoardPosition> GetCellsToClearWithX(int x)
+    {
+        if (x < 0 || BoardSize <= x)
+        {
+            return new HashSet<BoardPosition>();
+        }
+
+        HashSet<BoardPosition> cellsToBeCleared = new();
+
+        for (int y = 0; y < BoardSize; y++)
+        {
+            if (GetCell(x, y) == CellState.Empty)
+            {
+                return new HashSet<BoardPosition>();
+            }
+        }
+
+        for (int y = 0; y < BoardSize; y++)
+        {
+            cellsToBeCleared.Add(new BoardPosition(x, y));
+        }
+        return cellsToBeCleared;
+    }
+
+    private HashSet<BoardPosition> GetCellsToClearWithY(int y)
+    {
+        if (y < 0 || BoardSize <= y)
+        {
+            return new HashSet<BoardPosition>();
+        }
+
+        HashSet<BoardPosition> cellsToBeCleared = new();
+
+        for (int x = 0; x < BoardSize; x++)
+        {
+            if (GetCell(x, y) == CellState.Empty)
+            {
+                return new HashSet<BoardPosition>();
+            }
+        }
+
+        for (int x = 0; x < BoardSize; x++)
+        {
+            cellsToBeCleared.Add(new BoardPosition(x, y));
+        }
+
+        return cellsToBeCleared;
+    }
+
+    private HashSet<BoardPosition> GetCellsToClearWithGrid(int gridX, int gridY)
+    {
+        if (gridX < 0 || GridSize <= gridX || gridY < 0 || GridSize <= gridY)
+        {
+            return new HashSet<BoardPosition>();
+        }
+        HashSet<BoardPosition> cellsToBeCleared = new HashSet<BoardPosition>();
+
+        for (int offsetX = 0; offsetX < GridSize; offsetX++)
+        {
+            for (int offsetY = 0; offsetY < GridSize; offsetY++)
+            {
+                int targetX = GridSize * gridX + offsetX;
+                int targetY = GridSize * gridY + offsetY;
+                if (GetCell(targetX, targetY) != CellState.Filled)
+                {
+                    return new HashSet<BoardPosition>();
+                }
+            }
+        }
+
+        for (int offsetX = 0; offsetX < GridSize; offsetX++)
+        {
+            for (int offsetY = 0; offsetY < GridSize; offsetY++)
+            {
+                int targetX = GridSize * gridX + offsetX;
+                int targetY = GridSize * gridY + offsetY;
+                cellsToBeCleared.Add(new BoardPosition(targetX, targetY));
+            }
+        }
+
+        return cellsToBeCleared;
+    }
+
     public readonly struct CellUpdateData
     {
         public int X { get; }
         public int Y { get; }
-        public int Value { get; }
+        public CellState State { get; }
 
-        public CellUpdateData(int x, int y, int value)
+        public CellUpdateData(int x, int y, CellState state)
         {
             X = x;
             Y = y;
-            Value = value;
+            State = state;
         }
     }
 }

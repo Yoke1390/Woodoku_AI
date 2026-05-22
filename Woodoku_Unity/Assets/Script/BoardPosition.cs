@@ -15,6 +15,20 @@ public readonly struct BoardPosition
         return new BoardPosition(x, y);
     }
 
+    public override bool Equals(object other)
+    {
+        if ((other is BoardPosition otherPos))
+        {
+            return this._value == otherPos._value;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(x, y);
+    }
+
     public BoardPosition(int x, int y)
         : this()
     {

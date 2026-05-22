@@ -83,7 +83,7 @@ public class BoardUI : MonoBehaviour
 
     internal void BoradData_OnCellUpdate(object sender, BoardData.CellUpdateData data)
     {
-        bool isFilled = data.Value == 1;
+        bool isFilled = data.State == BoardData.CellState.Filled;
         UpdateCellState(data.X, data.Y, isFilled);
     }
 
