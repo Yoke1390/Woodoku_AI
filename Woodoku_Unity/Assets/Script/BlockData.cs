@@ -9,17 +9,17 @@ public class BlockData : ScriptableObject
     private Vector2Int[] blockCells;
     public int N_Blocks => blockCells.Length;
 
-    private BoardPosition[] _cachedBlockCells = null;
-    public IReadOnlyList<BoardPosition> BlockCells
+    private BlockOffset[] _cachedBlockCells = null;
+    public IReadOnlyList<BlockOffset> BlockCells
     {
         get
         {
             if (_cachedBlockCells == null)
             {
-                _cachedBlockCells = new BoardPosition[N_Blocks];
+                _cachedBlockCells = new BlockOffset[N_Blocks];
                 for (int i = 0; i < N_Blocks; i++)
                 {
-                    _cachedBlockCells[i] = blockCells[i];
+                    _cachedBlockCells[i] = (BlockOffset)blockCells[i];
                 }
             }
             return _cachedBlockCells;

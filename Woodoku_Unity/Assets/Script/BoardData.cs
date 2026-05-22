@@ -23,7 +23,7 @@ public class BoardData
 
     public int GetCell(BoardPosition boardPosition)
     {
-        if (IsValid(boardPosition))
+        if (IsInBoard(boardPosition))
         {
             return board[boardPosition.x, boardPosition.y];
         }
@@ -43,7 +43,7 @@ public class BoardData
     {
         int x = boardPosition.x;
         int y = boardPosition.y;
-        if (IsValid(boardPosition))
+        if (IsInBoard(boardPosition))
         {
             board[x, y] = value;
             CellUpdate?.Invoke(this, new CellUpdateData(x, y, value));
@@ -62,20 +62,67 @@ public class BoardData
 
     public bool CanPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
     {
-        foreach (BoardPosition cell in blockData.BlockCells)
+        foreach (BlockOffset cellOffset in blockData.BlockCells)
         {
-            BoardPosition targetPos = cell + blockBaseBoardPosition;
-            int cellValue = GetCell(targetPos);
-            Debug.Log($"Target Pos: {targetPos.x}, {targetPos.y} value: {cellValue}");
-            if (cellValue != 0)
+            if (TryOffset(blockBaseBoardPosition, cellOffset, out BoardPosition targetPos))
             {
+                int cellValue = GetCell(targetPos);
+                if (cellValue != 0)
+                {
+                    // target pos is filled
+                    return false;
+                }
+            }
+            else
+            {
+                // base + offset out of board
                 return false;
             }
         }
         return true;
     }
 
-    public bool IsValid(BoardPosition boardPosition)
+    public bool TryPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
+    {
+        bool canPlace = CanPlaceBlock(blockData, blockBaseBoardPosition);
+        if (canPlace)
+        {
+            PlaceBlock(blockData, blockBaseBoardPosition);
+        }
+        return canPlace;
+    }
+
+    private void PlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
+    {
+        foreach (BlockOffset blockOffset in blockData.BlockCells)
+        {
+            // called after validation
+            BoardPosition pos = blockBaseBoardPosition + blockOffset;
+            SetCell(pos, 1);
+        }
+    }
+
+    public bool TryOffset(
+        BoardPosition boardPosition,
+        BlockOffset blockOffset,
+        out BoardPosition newBoardPosition
+    )
+    {
+        int x = boardPosition.x + blockOffset.x;
+        int y = boardPosition.y + blockOffset.y;
+        newBoardPosition = new BoardPosition(x, y);
+        if (IsInBoard(newBoardPosition))
+        {
+            return true;
+        }
+        else
+        {
+            newBoardPosition = default;
+            return false;
+        }
+    }
+
+    public bool IsInBoard(BoardPosition boardPosition)
     {
         int x = boardPosition.x;
         int y = boardPosition.y;

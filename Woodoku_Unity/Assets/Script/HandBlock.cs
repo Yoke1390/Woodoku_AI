@@ -29,12 +29,12 @@ public class HandBlock : MonoBehaviour
 
         for (int i = 0; i < blockData.N_Blocks; i++)
         {
-            BoardPosition blockPosition = blockData.BlockCells[i];
+            BlockOffset blockOffset = blockData.BlockCells[i];
             BlockPiece newBlockPiece = Instantiate(blockPiecePrefab, blockPiecesParent);
             RectTransform newBlockPieceRectTransform = newBlockPiece.GetComponent<RectTransform>();
 
             newBlockPieceRectTransform.anchoredPosition =
-                (blockPosition - BlockData.Center) * cellSize;
+                ((Vector2)blockOffset - BlockData.Center) * cellSize;
             newBlockPieceRectTransform.sizeDelta = Vector2.one * cellSize;
 
             blockPieces[i] = newBlockPiece;

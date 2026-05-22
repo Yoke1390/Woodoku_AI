@@ -47,7 +47,7 @@ AIの環境として機能させることを前提とした、UnityでのWoodoku
 - [x] 🎯 配置時のデータ更新 (`SetCell(pos, 1)`) と UI 反映 (`CellUpdate` イベント → `BoardUI.UpdateCellState`)。
 - [x] 🎯 配置失敗時の手札位置への復帰（§4 と一体）。
 - [ ] 🔧 **配置〜消去ロジックの `BoardData` への集約**: 現在 `WoodokuGameManager.PlaceBlock` (private) が `SetCell` を直接呼んでいる。§6 の消去判定と一体化させるため、`BoardData.PlaceBlock(BlockData, BoardPosition) : PlacementResult` に責務移譲する設計に変更。
-- [ ] 🔧 `WoodokuGameManager.GetBlockBaseBoardPosition` の薄いラッパー削除: 中身が `boardUI.TryScreenPointToBoardPosition` への単純な転送のみ。`HandleDropRequest` 内に直接書く。
+- [x] 🔧 `WoodokuGameManager.GetBlockBaseBoardPosition` の薄いラッパー削除: 中身が `boardUI.TryScreenPointToBoardPosition` への単純な転送のみ。`HandleDropRequest` 内に直接書く。
 - [ ] 🔧 起動時テスト用の `boardData.SetCell(0, 0, 1)` / `SetCell(2, 7, 1)` を削除 (`WoodokuGameManager.Start`)。
 
 ## 6. 消去判定（ラインと3x3ブロック）の実装

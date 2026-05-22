@@ -113,7 +113,7 @@ public class BoardUI : MonoBehaviour
             return true;
         }
 
-        boardPosition = new BoardPosition(-1, -1);
+        boardPosition = default(BoardPosition);
         return false;
     }
 }
