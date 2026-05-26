@@ -14,6 +14,7 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     private Vector2 initialLocalPosition;
 
     private DropHandler _onDropRequested;
+    public event Action BlockPlaced;
 
     public void SetDropHandler(DropHandler handler)
     {
@@ -58,6 +59,7 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         bool success = _onDropRequested?.Invoke(eventData, blockData) ?? false;
         if (success)
         {
+            BlockPlaced?.Invoke();
             Destroy(gameObject);
         }
         else

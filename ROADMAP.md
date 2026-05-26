@@ -78,12 +78,12 @@ ROADMAP 方針に従い、判定ロジックは **すべて `BoardData` に集�
 
 ### 7.1 手札の消費と補充
 
-- [ ] 🎯 手札ブロック消費の通知経路追加:
+- [x] 🎯 手札ブロック消費の通知経路追加:
   - 現状 `DraggableBlock.OnEndDrag` 成功時に `Destroy(gameObject)` するだけで `HandManager` は知らない。
   - `DropHandler` とは別の `Action<int slotIndex>` 等で `HandManager` に通知する。
-- [ ] 🎯 `HandManager` に消費カウント・残りスロット管理を追加。
-- [ ] 🎯 `HandManager.HandEmpty` イベント（または同等の通知）を追加。
-- [ ] 🎯 全スロット消費時に、`HandManager` が新たに3つのブロックを補充。
+- [x] 🎯 `HandManager` に消費カウント・残りスロット管理を追加。
+- [x] 🎯 `HandManager.HandEmpty` イベント（または同等の通知）を追加。
+- [x] 🎯 全スロット消費時に、`HandManager` が新たに3つのブロックを補充。
 
 ### 7.2 手詰まり判定
 

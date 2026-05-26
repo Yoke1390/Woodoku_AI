@@ -9,6 +9,7 @@ public class HandManager : MonoBehaviour
     private HandBlock handBlockPrefab;
 
     private BlockData[] blockDatas;
+    private BlockData[] currentHandBlockDatas;
     private DropHandler _dropHandler;
     private float _cellSize;
 
@@ -17,17 +18,15 @@ public class HandManager : MonoBehaviour
         blockDatas = Resources.LoadAll<BlockData>("");
 
         Debug.Log($"{blockDatas.Length} Block Data was found");
+
+        currentHandBlockDatas = new BlockData[handSlots.Length];
     }
 
     public void Initialize(DropHandler dropHandler, float cellSize)
     {
         _dropHandler = dropHandler;
         _cellSize = cellSize;
-        for (int i = 0; i < handSlots.Length; i++)
-        {
-            BlockData blockData = GetBlockData();
-            GenerateHandBlock(i, blockData);
-        }
+        GenerateAll();
     }
 
     private BlockData GetBlockData()
@@ -36,12 +35,38 @@ public class HandManager : MonoBehaviour
         return blockDatas[3];
     }
 
+    private void GenerateAll()
+    {
+        for (int i = 0; i < handSlots.Length; i++)
+        {
+            BlockData blockData = GetBlockData();
+            GenerateHandBlock(i, blockData);
+        }
+    }
+
     private void GenerateHandBlock(int slotIndex, BlockData blockData)
     {
+        currentHandBlockDatas[slotIndex] = blockData;
+
         HandBlock newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
         newHandBlock.Initialize(blockData, _cellSize);
 
         var draggableBlock = newHandBlock.GetComponent<DraggableBlock>();
         draggableBlock.SetDropHandler(_dropHandler);
+        draggableBlock.BlockPlaced += () => OnBlockPlaced(slotIndex);
+    }
+
+    private void OnBlockPlaced(int slotIndex)
+    {
+        currentHandBlockDatas[slotIndex] = null;
+        if (IsHandEmpty())
+        {
+            GenerateAll();
+        }
+    }
+
+    private bool IsHandEmpty()
+    {
+        return System.Array.TrueForAll(currentHandBlockDatas, block => block == null);
     }
 }
