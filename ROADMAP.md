@@ -87,10 +87,10 @@ ROADMAP 方針に従い、判定ロジックは **すべて `BoardData` に集�
 
 ### 7.2 手詰まり判定
 
-- [ ] 🎯 タイミング: ブロック補充直後 / 配置直後の両方で実行。
-- [ ] 🎯 判定ロジック: 手札の各 `BlockData` について、盤面全座標 (0,0)〜(BoardSize-1, BoardSize-1) で `CanPlaceBlock` を試す全探索。
-- [ ] 🎯 判定 API: `WoodokuGameManager.HasAnyValidPlacement(IEnumerable<BlockData>) : bool`。
-- [ ] 🎯 1箇所でも置ければゲーム続行、どこにも置けなければゲームオーバー。
+- [x] 🎯 タイミング: ブロック補充直後 / 配置直後の両方で実行。
+- [x] 🎯 判定ロジック: 手札の各 `BlockData` について、盤面全座標 (0,0)〜(BoardSize-1, BoardSize-1) で `CanPlaceBlock` を試す全探索。
+- [x] 🎯 判定 API: `WoodokuGameManager.HasAnyValidPlacement(IEnumerable<BlockData>) : bool`。
+- [x] 🎯 1箇所でも置ければゲーム続行、どこにも置けなければゲームオーバー。
 
 ### 7.3 ゲームオーバー処理
 

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HandManager : MonoBehaviour
@@ -9,9 +11,13 @@ public class HandManager : MonoBehaviour
     private HandBlock handBlockPrefab;
 
     private BlockData[] blockDatas;
-    private BlockData[] currentHandBlockDatas;
+    private BlockData[] _currentHandBlockDatas;
+    public IReadOnlyList<BlockData> CurrentHandBlockDatas => _currentHandBlockDatas;
     private DropHandler _dropHandler;
     private float _cellSize;
+
+    public event Action BlockPlaced;
+    public event Action HandBlockGenerated;
 
     void Awake()
     {
@@ -19,7 +25,7 @@ public class HandManager : MonoBehaviour
 
         Debug.Log($"{blockDatas.Length} Block Data was found");
 
-        currentHandBlockDatas = new BlockData[handSlots.Length];
+        _currentHandBlockDatas = new BlockData[handSlots.Length];
     }
 
     public void Initialize(DropHandler dropHandler, float cellSize)
@@ -32,7 +38,7 @@ public class HandManager : MonoBehaviour
     private BlockData GetBlockData()
     {
         // tmp
-        return blockDatas[3];
+        return blockDatas[13];
     }
 
     private void GenerateAll()
@@ -42,11 +48,12 @@ public class HandManager : MonoBehaviour
             BlockData blockData = GetBlockData();
             GenerateHandBlock(i, blockData);
         }
+        HandBlockGenerated?.Invoke();
     }
 
     private void GenerateHandBlock(int slotIndex, BlockData blockData)
     {
-        currentHandBlockDatas[slotIndex] = blockData;
+        _currentHandBlockDatas[slotIndex] = blockData;
 
         HandBlock newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
         newHandBlock.Initialize(blockData, _cellSize);
@@ -58,15 +65,17 @@ public class HandManager : MonoBehaviour
 
     private void OnBlockPlaced(int slotIndex)
     {
-        currentHandBlockDatas[slotIndex] = null;
+        _currentHandBlockDatas[slotIndex] = null;
         if (IsHandEmpty())
         {
             GenerateAll();
         }
+
+        BlockPlaced?.Invoke();
     }
 
     private bool IsHandEmpty()
     {
-        return System.Array.TrueForAll(currentHandBlockDatas, block => block == null);
+        return System.Array.TrueForAll(_currentHandBlockDatas, block => block == null);
     }
 }

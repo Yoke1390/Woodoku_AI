@@ -71,6 +71,22 @@ public class BoardData
         SetCell(boardPosition, state);
     }
 
+    public bool CanPalceBlockInBoard(BlockData blockData)
+    {
+        for (int x = 0; x < BoardSize - blockData.MaxX; x++)
+        {
+            for (int y = 0; y < BoardSize - blockData.MaxY; y++)
+            {
+                BoardPosition blockBaseBoardPosition = new(x, y);
+                if (CanPlaceBlock(blockData, blockBaseBoardPosition))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public bool CanPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
     {
         foreach (BlockOffset cellOffset in blockData.BlockCells)
