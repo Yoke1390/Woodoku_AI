@@ -47,7 +47,9 @@ public class WoodokuGameManager : MonoBehaviour
             )
         )
         {
-            return boardData.TryPlaceBlock(blockData, blockBaseBoardPosition);
+            PlacementResult result = boardData.TryPlaceBlock(blockData, blockBaseBoardPosition);
+            // scoreManager.update(result);
+            return result.IsSuccess;
         }
         return false;
     }

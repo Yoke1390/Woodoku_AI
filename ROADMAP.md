@@ -68,11 +68,11 @@ ROADMAP 方針に従い、判定ロジックは **すべて `BoardData` に集�
 
 ### 6.2 配置〜消去の統合
 
-- [ ] 🎯 `BoardData.PlaceBlock(BlockData, BoardPosition) : PlacementResult` の実装（配置 → スキャン → クリアを一気通貫）。
-- [ ] 🎯 結果オブジェクト `PlacementResult` の定義:
+- [x] 🎯 `BoardData.PlaceBlock(BlockData, BoardPosition) : PlacementResult` の実装（配置 → スキャン → クリアを一気通貫）。
+- [x] 🎯 結果オブジェクト `PlacementResult` の定義:
   - `Success` (bool)
   - `ClearedLines` (IReadOnlyList<...>): 後のスコア計算・エフェクト用
-- [ ] 🎯 消去対象セルの `SetCell(pos, 0)` で `CellUpdate` イベント発火 → UI が自動的に空きセル表示に切り替わることを確認。
+- [x] 🎯 消去対象セルの `SetCell(pos, 0)` で `CellUpdate` イベント発火 → UI が自動的に空きセル表示に切り替わることを確認。
 
 ## 7. ゲームサイクルとゲームオーバー判定
 
