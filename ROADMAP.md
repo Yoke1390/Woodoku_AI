@@ -22,6 +22,45 @@ AIの環境として機能させることを前提とした、UnityでのWoodoku
 - [x] 🎯 `Cell` プレハブに、現在の状態（空き、ブロックあり）に応じて表示を切り替えるスクリプトをアタッチする。
 - [x] 🎯 `BoardUI` クラスを作成し、`Cell` プレハブを `BoardSize × BoardSize` のグリッド状に生成・配置する処理を記述する。
 
+## 2.5 盤面のビジュアルデザイン
+
+グリッドを画像のような「木製棚の凹み」スタイルにする。プレハブとスクリプトを組み合わせ、**グリッドサイズに応じて動的に生成**する。
+
+### 設計方針
+
+- 入れ子構造は使わず、`GridLayoutGroup` による現構造を維持する。
+- `Cell` プレハブを2レイヤー化し、セルの色と境界線を分離する。
+- 境界線は **右辺・上辺のみ** を各セルが持つ。左辺・下辺は隣接セルの右辺・上辺で賄う。
+- `BoardUI.Initialize()` 内で各セルの座標を計算し、スタイルを注入する（`Cell` は受動的にスタイルを受け取るだけ）。
+
+### Cellプレハブの構成
+
+```
+Cell (RectTransform)
+  ├── EmptyBackground (Image)   ← 常時表示。空きセルの色（暗い赤褐色）
+  ├── FilledOverlay   (Image)   ← Show/Hide。配置ブロックの色
+  ├── BorderRight     (Image)   ← 右辺境界線（Anchor: 右端 stretched）
+  └── BorderTop       (Image)   ← 上辺境界線（Anchor: 上端 stretched）
+```
+
+### 境界線の表示ルール（BoardUI が初期化時に注入）
+
+| 条件                                                                 | BorderRight / BorderTop |
+| -------------------------------------------------------------------- | ----------------------- |
+| 外枠（`x == BoardSize-1` / `y == BoardSize-1`）                      | **非表示**              |
+| 3x3グループ境界（`(x+1) % GridSize == 0` / `(y+1) % GridSize == 0`） | **太い・濃い色**        |
+| それ以外                                                             | **細い・薄い色**        |
+
+### タスク
+
+- [x] 🎯 `Cell` プレハブに `EmptyBackground`・`FilledOverlay`・`BorderRight`・`BorderTop` の4つの Image を追加する。
+- [x] 🎯 `Cell.cs` に `SetBorderRight(Color, float)`・`HideBorderRight()`・`SetBorderTop(Color, float)`・`HideBorderTop()` を実装する。
+- [x] 🎯 `Cell.cs` に `SetBackgroundColor(Color)` を実装する。
+- [x] 🎯 `BoardUI.InitializeCells()` にスタイル注入ロジックを追加する（座標計算 → 外枠/3x3境界/通常の3ケース分岐）。
+- [x] 🎯 `BoardUI` にスタイル設定用のSerializeFieldを追加する（`normalBorderColor`, `groupBorderColor`, `normalBorderWidth`, `groupBorderWidth`, `emptyCellColor`）。
+
+---
+
 ## 3. 手札ブロックの生成と表示
 
 - [x] 🎯 手札ブロックのピース (`BlockPiece`) プレハブ作成。

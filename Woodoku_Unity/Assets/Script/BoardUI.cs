@@ -13,6 +13,18 @@ public class BoardUI : MonoBehaviour
     [SerializeField]
     private Cell cellPrefab;
 
+    [SerializeField]
+    private Color backgroundColor1;
+
+    [SerializeField]
+    private Color backgroundColor2;
+
+    [SerializeField]
+    private Color defaultBorderColor;
+
+    [SerializeField]
+    private Color highlightBorderColor;
+
     private List<Cell> cellList = new List<Cell>();
     public float CellSize { get; private set; }
 
@@ -44,8 +56,53 @@ public class BoardUI : MonoBehaviour
         for (int i = 0; i < totalCellNumber; i++)
         {
             Cell newCell = Instantiate(cellPrefab, gameObject.transform);
+            SetCellColor(i, newCell);
             newCell.Hide();
             cellList.Add(newCell);
+        }
+    }
+
+    private void SetCellColor(int index, Cell cell)
+    {
+        int x = index % boardData.BoardSize;
+        int y = index / boardData.BoardSize;
+
+        Color backgroundColor = GetBackgroundColor(x, y);
+        cell.SetBackgroundColor(backgroundColor);
+
+        cell.InitializeBorder(defaultBorderColor);
+
+        if ((x + 1) % boardData.GridSize == 0)
+        {
+            cell.HighlightRightBorder(highlightBorderColor);
+        }
+        if ((y + 1) % boardData.GridSize == 0)
+        {
+            cell.HighlightTopBorder(highlightBorderColor);
+        }
+
+        if ((x + 1) == boardData.BoardSize)
+        {
+            cell.HideRightBorder();
+        }
+        if ((y + 1) == boardData.BoardSize)
+        {
+            cell.HideTopBorder();
+        }
+    }
+
+    private Color GetBackgroundColor(int x, int y)
+    {
+        int gridX = x / boardData.GridSize;
+        int gridY = y / boardData.GridSize;
+
+        if ((gridX + gridY) % 2 == 0)
+        {
+            return backgroundColor1;
+        }
+        else
+        {
+            return backgroundColor2;
         }
     }
 

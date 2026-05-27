@@ -1182,6 +1182,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cellPrefab: {fileID: 1069537035276670975, guid: 7655db2d5f06c41bea6b2c9b6de93a2f, type: 3}
+  backgroundColor1: {r: 0.23584908, g: 0.23584908, b: 0.23584908, a: 1}
+  backgroundColor2: {r: 0.16981131, g: 0.16981131, b: 0.16981131, a: 1}
+  defaultBorderColor: {r: 0.41509432, g: 0.41509432, b: 0.41509432, a: 1}
+  highlightBorderColor: {r: 0.6603774, g: 0.6603774, b: 0.6603774, a: 1}
 --- !u!114 &1005581938
 MonoBehaviour:
   m_ObjectHideFlags: 0

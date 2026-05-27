@@ -1,19 +1,60 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Cell : MonoBehaviour
 {
     [SerializeField]
-    private GameObject sprite;
+    private Image background;
+
+    [SerializeField]
+    private Image filledOverlay;
+
+    [SerializeField]
+    private Image borderRight;
+
+    [SerializeField]
+    private Image borderTop;
 
     public void Show()
     {
-        sprite.SetActive(true);
+        filledOverlay.enabled = true;
     }
 
     public void Hide()
     {
-        sprite.SetActive(false);
+        filledOverlay.enabled = false;
+    }
+
+    public void SetBackgroundColor(Color backgroundColor)
+    {
+        background.color = backgroundColor;
+    }
+
+    public void InitializeBorder(Color defaultBorderColor)
+    {
+        borderRight.color = defaultBorderColor;
+        borderTop.color = defaultBorderColor;
+    }
+
+    public void HighlightRightBorder(Color highlightBorderColor)
+    {
+        borderRight.color = highlightBorderColor;
+        borderRight.transform.SetAsLastSibling();
+    }
+
+    public void HighlightTopBorder(Color highlightBorderColor)
+    {
+        borderTop.color = highlightBorderColor;
+        borderTop.transform.SetAsLastSibling();
+    }
+
+    public void HideRightBorder()
+    {
+        borderRight.enabled = false;
+    }
+
+    public void HideTopBorder()
+    {
+        borderTop.enabled = false;
     }
 }
