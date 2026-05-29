@@ -10,6 +10,7 @@ public class HandManager : MonoBehaviour
     [SerializeField]
     private HandBlock handBlockPrefab;
 
+    private Unity.Mathematics.Random random;
     private BlockData[] blockDatas;
     private BlockData[] _currentHandBlockDatas;
     public IReadOnlyList<BlockData> CurrentHandBlockDatas => _currentHandBlockDatas;
@@ -28,24 +29,30 @@ public class HandManager : MonoBehaviour
         _currentHandBlockDatas = new BlockData[handSlots.Length];
     }
 
-    public void Initialize(DropHandler dropHandler, float cellSize)
+    public void Initialize(DropHandler dropHandler, float cellSize, uint randomSeed)
     {
+        random = new(randomSeed);
         _dropHandler = dropHandler;
         _cellSize = cellSize;
         GenerateAll();
     }
 
-    private BlockData GetBlockData()
+    private BlockData GetSampleBlockData()
     {
         // tmp
         return blockDatas[13];
+    }
+
+    public BlockData GetRandomBlockData()
+    {
+        return blockDatas[random.NextInt(0, blockDatas.Length)];
     }
 
     private void GenerateAll()
     {
         for (int i = 0; i < handSlots.Length; i++)
         {
-            BlockData blockData = GetBlockData();
+            BlockData blockData = GetRandomBlockData();
             GenerateHandBlock(i, blockData);
         }
         HandBlockGenerated?.Invoke();

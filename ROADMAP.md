@@ -67,7 +67,7 @@ Cell (RectTransform)
 - [x] 🎯 手札エリア (`HandArea`) の UI 構築・3スロット配置。
 - [x] 🎯 `HandBlock` クラスの作成（`BlockData` から `BlockPiece` を子オブジェクトとして生成・配置）。
 - [x] 🎯 `HandManager` クラスの作成（3つの手札スロット管理、`Resources.LoadAll<BlockData>` で全ブロック取得）。
-- [ ] 🎯 **ブロックのランダム選出**: 現在 `HandManager.GetBlockData()` はインデックス `[3]` で固定（`// tmp` 済み）。`UnityEngine.Random.Range` で実装する。
+- [x] 🎯 **ブロックのランダム選出**: `HandManager.GetRandomBlockData()` が `Unity.Mathematics.Random.NextInt` で実装済み（`Initialize` のシードで再現可能）。固定取得用の `GetSampleBlockData()` は未使用のまま残存。
 
 ## 4. ドラッグ＆ドロップ機能の実装（UI操作と内部ロジックの分離）
 
@@ -149,7 +149,7 @@ ROADMAP 冒頭の「AI環境として機能させる」最終目標に向けた�
 
 ### 8.2 行動 API
 
-- [x] 🎯 `WoodokuGameManager.TryPlaceBlock(BlockData, BoardPosition) : bool` — 既存。AI もこれを呼ぶ想定。
+- [ ] 🎯 `WoodokuGameManager.TryPlaceBlock(BlockData, BoardPosition) : bool` — 未実装。現状、配置は `private HandleDropRequest(PointerEventData, BlockData)` 経由でのみ可能で、AI から呼べる公開 API がない。ロジック本体の `BoardData.TryPlaceBlock(BlockData, BoardPosition) : PlacementResult` は存在するので、それを薄くラップする公開メソッドの追加が必要。
 
 ### 8.3 イベント
 
@@ -164,19 +164,17 @@ ROADMAP 冒頭の「AI環境として機能させる」最終目標に向けた�
 
 ### Singleton 依存の整理
 
-- [ ] 🔧 **`HandBlock` の `BoardUI.Instance` 依存排除**:
-  - 現状: `HandBlock.Initialize()` 内で `BoardUI.Instance.CellSize` を参照。
-  - 対応: `Initialize(BlockData, float cellSize)` で外から渡す。`HandManager` 側も `boardUI` 参照を持ち、生成時に渡す。
-- [ ] 🔧 **`WoodokuGameManager.Instance` Singleton の整理**: 現在のコードから外部参照がなくなっている → 削除を検討。
-- [ ] 🔧 **`BoardUI.Instance` Singleton の整理**: `HandBlock` の依存排除後、削除可能。
+- [x] 🔧 **`HandBlock` の `BoardUI.Instance` 依存排除**: `HandBlock.Initialize(BlockData, float cellSize)` で `cellSize` を外から受け取る形に変更済み。`HandManager` が `Initialize` 時に受け取った `_cellSize` を渡している。
+- [x] 🔧 **`WoodokuGameManager.Instance` Singleton の整理**: `Instance` は削除済み（コードベース全体に `Instance` 参照なし）。
+- [x] 🔧 **`BoardUI.Instance` Singleton の整理**: `Instance` は削除済み。
 
 ### API 設計の見直し
 
-- [ ] 🔧 `BoardUI.TryScreenPointToBoardPosition` の失敗時 `out` 値 `(-1, -1)` のセンチネル: `default(BoardPosition)` か明示的な無効状態に変更を検討。
-- [ ] 🔧 `BoardData.SetCell` の `int value` パラメータ: `0`/`1` のマジックナンバー → `enum CellState { Empty, Filled }` への変更を検討（消去・特殊タイル等の将来拡張に備える）。
+- [x] 🔧 `BoardUI.TryScreenPointToBoardPosition` の失敗時 `out` 値: `default(BoardPosition)` を返す形に変更済み（`(-1, -1)` センチネルを廃止）。
+- [x] 🔧 `BoardData.SetCell` の値パラメータ: `enum CellState { Empty, Filled, OutOfBoard }` を導入し、`SetCell(..., CellState state)` に変更済み。
 
 ### コード品質
 
-- [ ] 🔧 `BoardData.CanPlaceBlock` 内の `Debug.Log` 整理（§6.3 と同じ）。
+- [x] 🔧 `BoardData.CanPlaceBlock` 内の `Debug.Log` 整理: 現コードに `Debug.Log` は残っていない。
 - [ ] 🔧 起動時テスト用 `SetCell` の削除（§5 リファクタと同じ）。
 - [ ] 🔧 `BoardUI.BoradData_OnCellUpdate` のタイポ修正（`Borad` → `Board`）。

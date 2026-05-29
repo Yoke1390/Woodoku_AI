@@ -138,7 +138,7 @@ public class BoardUI : MonoBehaviour
         }
     }
 
-    internal void BoradData_OnCellUpdate(object sender, BoardData.CellUpdateData data)
+    internal void BoardData_OnCellUpdate(object sender, BoardData.CellUpdateData data)
     {
         bool isFilled = data.State == BoardData.CellState.Filled;
         UpdateCellState(data.X, data.Y, isFilled);

@@ -71,7 +71,7 @@ public class BoardData
         SetCell(boardPosition, state);
     }
 
-    public bool CanPalceBlockInBoard(BlockData blockData)
+    public bool CanPlaceBlockInBoard(BlockData blockData)
     {
         for (int x = 0; x < BoardSize - blockData.MaxX; x++)
         {

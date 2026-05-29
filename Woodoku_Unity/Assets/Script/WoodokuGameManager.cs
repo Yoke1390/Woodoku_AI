@@ -21,21 +21,13 @@ public class WoodokuGameManager : MonoBehaviour
     {
         boardData = new BoardData(gameSetting.GridSize);
         boardUI.Initialize(boardData);
-        handManager.Initialize(HandleDropRequest, boardUI.CellSize);
+
+        uint randomSeed = 1234; // test
+        handManager.Initialize(HandleDropRequest, boardUI.CellSize, randomSeed);
         handManager.BlockPlaced += CheckForGameOver;
         handManager.HandBlockGenerated += CheckForGameOver;
 
-        boardData.CellUpdate += boardUI.BoradData_OnCellUpdate;
-
-        // test
-        boardData.SetCell(2, 0);
-        boardData.SetCell(2, 1);
-        boardData.SetCell(2, 2);
-        boardData.SetCell(2, 3);
-        boardData.SetCell(2, 4);
-        boardData.SetCell(2, 6);
-        boardData.SetCell(2, 7);
-        boardData.SetCell(2, 8);
+        boardData.CellUpdate += boardUI.BoardData_OnCellUpdate;
     }
 
     private void CheckForGameOver()
@@ -54,7 +46,7 @@ public class WoodokuGameManager : MonoBehaviour
             {
                 continue;
             }
-            if (boardData.CanPalceBlockInBoard(blockData))
+            if (boardData.CanPlaceBlockInBoard(blockData))
             {
                 return false;
             }
