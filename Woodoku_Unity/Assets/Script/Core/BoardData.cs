@@ -17,12 +17,18 @@ public class BoardData : IReadOnlyBoard
         GridSize = gridSize;
         BoardSize = GridSize * GridSize;
         NGrids = BoardSize / GridSize;
-        Reset();
+        board = new CellState[BoardSize, BoardSize];
     }
 
     public void Reset()
     {
-        board = new CellState[BoardSize, BoardSize];
+        for (int x = 0; x < BoardSize; x++)
+        {
+            for (int y = 0; y < BoardSize; y++)
+            {
+                SetCell(x, y, CellState.Empty);
+            }
+        }
     }
 
     public CellState GetCell(BoardPosition boardPosition)
@@ -48,12 +54,18 @@ public class BoardData : IReadOnlyBoard
         int y = boardPosition.y;
         if (IsInBoard(boardPosition))
         {
+            if (board[x, y] == state)
+                return;
+
             board[x, y] = state;
             CellUpdate?.Invoke(this, new CellUpdateData(x, y, state));
         }
         else
         {
-            throw new IndexOutOfRangeException($"Invalid board index: {x}, {y}");
+            throw new ArgumentOutOfRangeException(
+                $"Invalid board index: {x}, {y}",
+                nameof(boardPosition)
+            );
         }
     }
 

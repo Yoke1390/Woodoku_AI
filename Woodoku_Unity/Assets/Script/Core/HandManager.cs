@@ -4,6 +4,7 @@ using System.Linq;
 
 public class HandManager : IReadOnlyHands
 {
+    private readonly int _randomSeed;
     private Random random;
     private readonly BlockShape[] _blockShapes;
 
@@ -21,7 +22,7 @@ public class HandManager : IReadOnlyHands
             throw new ArgumentException("No Block Shapes passed", nameof(_blockShapes));
         }
 
-        random = new(randomSeed);
+        _randomSeed = randomSeed;
 
         if (NHandSlots > 0)
         {
@@ -36,12 +37,20 @@ public class HandManager : IReadOnlyHands
         }
     }
 
-    private BlockShape GetRandomBlockShape()
+    public void Reset()
     {
-        return _blockShapes[random.Next(0, _blockShapes.Length)];
+        random = new(_randomSeed);
+        GenerateAll();
     }
 
-    public void Begin() => GenerateAll();
+    private BlockShape GetRandomBlockShape()
+    {
+        if (random == null)
+        {
+            throw new InvalidOperationException("random generator must be initialized");
+        }
+        return _blockShapes[random.Next(0, _blockShapes.Length)];
+    }
 
     private void GenerateAll()
     {

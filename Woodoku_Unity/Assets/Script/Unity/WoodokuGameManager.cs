@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -46,6 +45,13 @@ public class WoodokuGameManager : MonoBehaviour
         handUI.Initialize(HandleDropRequest, boardUI.CellSize, gameSession.Hands);
 
         gameSession.GameOver += OnGameOver;
+        gameOverUI.Restart += OnRestart;
+    }
+
+    private void OnRestart()
+    {
+        gameOverUI.Hide();
+        gameSession.Begin();
     }
 
     private void OnGameOver()

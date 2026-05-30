@@ -32,7 +32,8 @@ public class GameSession
 
     public void Begin()
     {
-        handManager.Begin();
+        boardData.Reset();
+        handManager.Reset();
         State = GameState.Playing;
     }
 
