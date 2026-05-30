@@ -1,0 +1,16 @@
+{
+    "name": "Woodoku.Unity",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a2ab4c5e2dd1746fcab7ef887bda25b3"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
