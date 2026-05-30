@@ -137,7 +137,7 @@ ROADMAP 方針に従い、判定ロジックは **すべて `BoardData` に集�
 
 - [x] 🎯 ゲーム状態の管理: `enum GameState { Playing, GameOver }`。
 - [x] 🎯 ゲームオーバー UI の表示。
-- [ ] 🎯 リスタート機能: `BoardData.Reset()` + 手札再生成 + 状態リセット。
+- [x] 🎯 リスタート機能: `BoardData.Reset()` + 手札再生成 + 状態リセット。
 
 ## 8. AI 連携用 API の整備
 
@@ -147,12 +147,12 @@ ROADMAP 冒頭の「AI環境として機能させる」最終目標に向けた�
 
 - [x] 🎯 手札の観測: `GameSession.Hands : IReadOnlyHands`（`CurrentHand : IReadOnlyList<BlockShape?>` + `HandBlockGenerated`）。
 - [x] 🎯 盤面の観測: `GameSession.Board : IReadOnlyBoard`（`GetCell(BoardPosition)` + `GridSize`/`BoardSize`/`NGrids` + `CellUpdate`）。専用の読み取り専用インターフェースで公開済み。
-- [ ] 🎯 ゲーム状態の観測: `GameSession.CurrentState : GameState` — `GameState` enum 未実装のため保留（§7.3 と一体）。
+- [x] 🎯 ゲーム状態の観測: `GameSession.CurrentState : GameState` — `GameState` enum 未実装のため保留（§7.3 と一体）。
 
 ### 8.2 行動 API
 
 - [x] 🎯 行動 API: `GameSession.TryPlaceBlock(int slotIndex, BoardPosition) : PlacementResult` を実装済み。行動空間は「手札スロット番号 × 盤面基準位置」。空スロット等の無効手は例外ではなく `PlacementResult.Failure` を返す。
-- [ ] 🔧 範囲外 `slotIndex` のガード: 現状 `CurrentHand[slotIndex]` の配列アクセスで例外が飛ぶ。空スロットと同様 `Failure` に統一する。
+- [x] 🔧 範囲外 `slotIndex` のガード: 現状 `CurrentHand[slotIndex]` の配列アクセスで例外が飛ぶ。空スロットと同様 `Failure` に統一する。
 
 ### 8.3 イベント
 

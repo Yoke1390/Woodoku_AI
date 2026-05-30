@@ -77,25 +77,30 @@ public class BoardData : IReadOnlyBoard
 
     public bool CanPlaceBlockInBoard(BlockShape blockShape)
     {
+        return EnumerateLegalActions(blockShape).Any();
+    }
+
+    public IEnumerable<PlacementAction> EnumerateLegalActions(BlockShape blockShape)
+    {
         for (int x = 0; x < BoardSize - blockShape.MaxX; x++)
         {
             for (int y = 0; y < BoardSize - blockShape.MaxY; y++)
             {
                 BoardPosition blockBaseBoardPosition = new(x, y);
-                if (CanPlaceBlock(blockShape, blockBaseBoardPosition))
+                PlacementAction action = new(blockBaseBoardPosition, blockShape);
+                if (CanPlaceBlock(action))
                 {
-                    return true;
+                    yield return action;
                 }
             }
         }
-        return false;
     }
 
-    public bool CanPlaceBlock(BlockShape blockShape, BoardPosition blockBaseBoardPosition)
+    public bool CanPlaceBlock(PlacementAction action)
     {
-        foreach (BlockOffset cellOffset in blockShape.Blocks)
+        foreach (BlockOffset cellOffset in action.Shape.Blocks)
         {
-            BoardPosition targetPos = blockBaseBoardPosition + cellOffset;
+            BoardPosition targetPos = action.BasePosition + cellOffset;
             if (GetCell(targetPos) != CellState.Empty)
             {
                 // OutOfBoard or Filled
@@ -105,29 +110,23 @@ public class BoardData : IReadOnlyBoard
         return true;
     }
 
-    public PlacementResult TryPlaceBlock(
-        BlockShape blockShape,
-        BoardPosition blockBaseBoardPosition
-    )
+    public PlacementResult TryPlaceBlock(PlacementAction action)
     {
-        bool canPlace = CanPlaceBlock(blockShape, blockBaseBoardPosition);
+        bool canPlace = CanPlaceBlock(action);
         if (canPlace)
         {
-            PlacementResult result = PlaceBlockAndClear(blockShape, blockBaseBoardPosition);
+            PlacementResult result = PlaceBlockAndClear(action);
             return result;
         }
-        return PlacementResult.Failure(blockShape);
+        return PlacementResult.Failure(action.Shape);
     }
 
-    private PlacementResult PlaceBlockAndClear(
-        BlockShape blockShape,
-        BoardPosition blockBaseBoardPosition
-    )
+    private PlacementResult PlaceBlockAndClear(PlacementAction action)
     {
-        foreach (BlockOffset blockOffset in blockShape.Blocks)
+        foreach (BlockOffset blockOffset in action.Shape.Blocks)
         {
             // called after validation
-            BoardPosition pos = blockBaseBoardPosition + blockOffset;
+            BoardPosition pos = action.BasePosition + blockOffset;
             SetCell(pos, CellState.Filled);
         }
 
@@ -135,7 +134,7 @@ public class BoardData : IReadOnlyBoard
 
         ClearCells(cellsToClearList);
 
-        return new PlacementResult(true, blockShape, nClearedTimes, cellsToClearList);
+        return new PlacementResult(true, action.Shape, nClearedTimes, cellsToClearList);
     }
 
     private void ClearCells(IEnumerable<BoardPosition> cellsToClear)

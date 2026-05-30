@@ -79,7 +79,9 @@ public class GameSession
         if (!blockShape.HasValue)
             return PlacementResult.Failure();
 
-        PlacementResult result = boardData.TryPlaceBlock(blockShape.Value, blockBaseBoardPosition);
+        PlacementResult result = boardData.TryPlaceBlock(
+            new PlacementAction(blockBaseBoardPosition, blockShape.Value)
+        );
 
         if (result.IsSuccess)
         {

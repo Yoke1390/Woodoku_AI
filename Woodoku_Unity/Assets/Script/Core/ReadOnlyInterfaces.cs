@@ -14,6 +14,7 @@ public interface IReadOnlyBoard
     int NGrids { get; }
 
     CellState GetCell(BoardPosition boardPosition);
+    IEnumerable<PlacementAction> EnumerateLegalActions(BlockShape shape);
     event EventHandler<CellUpdateData> CellUpdate;
 }
 
