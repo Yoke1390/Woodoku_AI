@@ -37,9 +37,9 @@ public class HandManager : IReadOnlyHands
         }
     }
 
-    public void Reset()
+    public void Reset(int? newSeed = null)
     {
-        random = new(_randomSeed);
+        random = new(newSeed ?? _randomSeed);
         GenerateAll();
     }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public enum GameState
 {
@@ -50,20 +51,18 @@ public class GameSession
         }
     }
 
-    private bool IsGameOver()
+    private bool IsGameOver() => !GetLegalActions().Any();
+
+    public IEnumerable<AgentAction> GetLegalActions()
     {
-        foreach (BlockShape? blockShape in handManager.CurrentHand)
+        for (int slot = 0; slot < Hands.CurrentHand.Count; slot++)
         {
-            if (!blockShape.HasValue)
-            {
+            BlockShape? shape = Hands.CurrentHand[slot];
+            if (!shape.HasValue)
                 continue;
-            }
-            if (boardData.CanPlaceBlockInBoard(blockShape.Value))
-            {
-                return false;
-            }
+            foreach (PlacementAction p in boardData.EnumerateLegalActions(shape.Value))
+                yield return new AgentAction(slot, p.BasePosition);
         }
-        return true;
     }
 
     public PlacementResult TryPlaceBlock(int slotIndex, BoardPosition blockBaseBoardPosition)
