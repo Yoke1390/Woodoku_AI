@@ -16,3 +16,9 @@ public interface IReadOnlyBoard
     CellState GetCell(BoardPosition boardPosition);
     event EventHandler<CellUpdateData> CellUpdate;
 }
+
+public interface IReadOnlyScore
+{
+    int Score { get; }
+    event Action<int> ScoreUpdate;
+}

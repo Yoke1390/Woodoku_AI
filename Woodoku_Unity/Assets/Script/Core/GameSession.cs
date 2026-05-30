@@ -11,10 +11,12 @@ public class GameSession
 {
     private readonly BoardData boardData;
     private readonly HandManager handManager;
+    private readonly ScoreManager scoreManager;
 
     public GameState State { get; private set; }
     public IReadOnlyBoard Board => boardData;
     public IReadOnlyHands Hands => handManager;
+    public IReadOnlyScore Score => scoreManager;
     public event Action GameOver;
 
     public GameSession(
@@ -26,6 +28,7 @@ public class GameSession
     {
         boardData = new(gridSize);
         handManager = new(blockShapes, nHandSlots, randomSeed);
+        scoreManager = new();
 
         handManager.HandSettled += CheckForGameOver;
     }
@@ -34,6 +37,7 @@ public class GameSession
     {
         boardData.Reset();
         handManager.Reset();
+        scoreManager.Reset();
         State = GameState.Playing;
     }
 
@@ -79,6 +83,7 @@ public class GameSession
 
         if (result.IsSuccess)
         {
+            scoreManager.ApplyPlacement(result);
             handManager.CommitPlacement(slotIndex);
         }
 

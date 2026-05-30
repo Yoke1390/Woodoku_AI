@@ -17,6 +17,9 @@ public class WoodokuGameManager : MonoBehaviour
     [SerializeField]
     private GameOverUI gameOverUI;
 
+    [SerializeField]
+    private ScoreUI scoreUI;
+
     private GameSession gameSession;
 
     public const int NHandSlots = 3;
@@ -44,6 +47,7 @@ public class WoodokuGameManager : MonoBehaviour
         boardUI.Initialize(gameSession.Board);
         handUI.Initialize(HandleDropRequest, boardUI.CellSize, gameSession.Hands);
 
+        gameSession.Score.ScoreUpdate += scoreUI.UpdateScore;
         gameSession.GameOver += OnGameOver;
         gameOverUI.Restart += OnRestart;
     }
