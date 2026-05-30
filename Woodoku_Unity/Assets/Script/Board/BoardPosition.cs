@@ -1,11 +1,9 @@
 using System;
-using UnityEngine;
 
 public readonly struct BoardPosition
 {
-    private readonly Vector2Int _value;
-    public int x => _value.x;
-    public int y => _value.y;
+    public int x { get; }
+    public int y { get; }
 
     // without validation
     public static BoardPosition operator +(BoardPosition boardPosition, BlockOffset blockOffset)
@@ -17,9 +15,9 @@ public readonly struct BoardPosition
 
     public override bool Equals(object other)
     {
-        if ((other is BoardPosition otherPos))
+        if (other is BoardPosition otherPos)
         {
-            return this._value == otherPos._value;
+            return this.x == otherPos.x && this.y == otherPos.y;
         }
         return false;
     }
@@ -30,8 +28,8 @@ public readonly struct BoardPosition
     }
 
     public BoardPosition(int x, int y)
-        : this()
     {
-        _value = new Vector2Int(x, y);
+        this.x = x;
+        this.y = y;
     }
 }

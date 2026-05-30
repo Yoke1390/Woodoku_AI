@@ -32,7 +32,7 @@ public class HandBlock : MonoBehaviour
             RectTransform newBlockPieceRectTransform = newBlockPiece.GetComponent<RectTransform>();
 
             newBlockPieceRectTransform.anchoredPosition =
-                ((Vector2)blockOffset - blockShape.Center()) * cellSize;
+                (blockOffset.ToVector2() - blockShape.Center()) * cellSize;
             newBlockPieceRectTransform.sizeDelta = Vector2.one * cellSize;
 
             blockPieces[i] = newBlockPiece;

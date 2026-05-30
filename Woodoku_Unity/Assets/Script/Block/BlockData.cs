@@ -67,7 +67,7 @@ public class BlockData : ScriptableObject
         _cachedBlockCells = new BlockOffset[N_Blocks];
         for (int i = 0; i < N_Blocks; i++)
         {
-            _cachedBlockCells[i] = (BlockOffset)blockCells[i];
+            _cachedBlockCells[i] = blockCells[i].ToBlockOffset();
         }
     }
 }
