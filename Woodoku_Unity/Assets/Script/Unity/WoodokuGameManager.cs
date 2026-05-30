@@ -32,8 +32,6 @@ public class WoodokuGameManager : MonoBehaviour
 
     private void Initialize()
     {
-        int randomSeed = 1234; // test
-
         BlockData[] blockDatas = Resources.LoadAll<BlockData>("");
         List<BlockShape> blockShapes = new();
         foreach (BlockData data in blockDatas)
@@ -42,7 +40,7 @@ public class WoodokuGameManager : MonoBehaviour
             blockShapes.Add(shape);
         }
 
-        gameSession = new(gameSetting.GridSize, blockShapes, NHandSlots, randomSeed);
+        gameSession = new(gameSetting.GridSize, blockShapes, NHandSlots);
 
         boardUI.Initialize(gameSession.Board);
         handUI.Initialize(HandleDropRequest, boardUI.CellSize, gameSession.Hands);

@@ -20,11 +20,13 @@ public class GameSession
     public IReadOnlyScore Score => scoreManager;
     public event Action GameOver;
 
+    private const int TestSeed = 1234;
+
     public GameSession(
         int gridSize,
         IEnumerable<BlockShape> blockShapes,
         int nHandSlots,
-        int randomSeed
+        int randomSeed = TestSeed
     )
     {
         boardData = new(gridSize);
@@ -34,10 +36,10 @@ public class GameSession
         handManager.HandSettled += CheckForGameOver;
     }
 
-    public void Begin()
+    public void Begin(int? seed = null)
     {
         boardData.Reset();
-        handManager.Reset();
+        handManager.Reset(seed);
         scoreManager.Reset();
         State = GameState.Playing;
     }
@@ -78,9 +80,8 @@ public class GameSession
         if (!blockShape.HasValue)
             return PlacementResult.Failure();
 
-        PlacementResult result = boardData.TryPlaceBlock(
-            new PlacementAction(blockBaseBoardPosition, blockShape.Value)
-        );
+        PlacementAction action = new(blockBaseBoardPosition, blockShape.Value);
+        PlacementResult result = boardData.TryPlaceBlock(action);
 
         if (result.IsSuccess)
         {
@@ -89,5 +90,10 @@ public class GameSession
         }
 
         return result;
+    }
+
+    public PlacementResult TryPlaceBlock(AgentAction a)
+    {
+        return TryPlaceBlock(a.SlotIndex, a.BasePosition);
     }
 }
