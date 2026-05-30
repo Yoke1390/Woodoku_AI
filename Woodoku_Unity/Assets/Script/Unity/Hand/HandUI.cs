@@ -10,17 +10,17 @@ public class HandUI : MonoBehaviour
     [SerializeField]
     private HandBlock handBlockPrefab;
 
-    private HandManager _handmanager;
+    private IReadOnlyHands _hands;
     private DropHandler _dropHandler;
     private float _cellSize;
 
-    public void Initialize(DropHandler dropHandler, float cellSize, HandManager handManager)
+    public void Initialize(DropHandler dropHandler, float cellSize, IReadOnlyHands hands)
     {
         _dropHandler = dropHandler;
         _cellSize = cellSize;
-        _handmanager = handManager;
+        _hands = hands;
 
-        _handmanager.HandBlockGenerated += GenerateHandBlock;
+        _hands.HandBlockGenerated += GenerateHandBlock;
     }
 
     private void GenerateHandBlock(int slotIndex, BlockShape blockShape)
@@ -29,7 +29,6 @@ public class HandUI : MonoBehaviour
         newHandBlock.Initialize(blockShape, _cellSize);
 
         var draggableBlock = newHandBlock.GetComponent<DraggableBlock>();
-        draggableBlock.SetDropHandler(_dropHandler);
-        draggableBlock.BlockPlaced += () => _handmanager.OnBlockPlaced(slotIndex);
+        draggableBlock.Initialize(slotIndex, _dropHandler);
     }
 }

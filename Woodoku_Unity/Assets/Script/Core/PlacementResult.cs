@@ -23,4 +23,7 @@ public readonly struct PlacementResult
         NClearedTimes = nClearedTimes;
         _clearedCells = clearedCells;
     }
+
+    public static PlacementResult Failure(BlockShape blockShape = default) =>
+        new(false, blockShape, 0, Array.Empty<BoardPosition>());
 }

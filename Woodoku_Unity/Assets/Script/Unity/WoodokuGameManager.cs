@@ -15,22 +15,18 @@ public class WoodokuGameManager : MonoBehaviour
     [SerializeField]
     private GameSetting gameSetting;
 
-    private BoardData boardData;
-    private HandManager handManager;
+    private GameSession gameSession;
 
     public const int NHandSlots = 3;
 
     void Start()
     {
         Initialize();
-        handManager.Begin();
+        gameSession.Begin();
     }
 
     private void Initialize()
     {
-        boardData = new BoardData(gameSetting.GridSize);
-        boardUI.Initialize(boardData);
-
         int randomSeed = 1234; // test
 
         BlockData[] blockDatas = Resources.LoadAll<BlockData>("");
@@ -41,51 +37,37 @@ public class WoodokuGameManager : MonoBehaviour
             blockShapes.Add(shape);
         }
 
-        handManager = new(blockShapes, NHandSlots, randomSeed);
-        handManager.HandSettled += CheckForGameOver;
+        gameSession = new(gameSetting.GridSize, blockShapes, NHandSlots, randomSeed);
 
-        handUI.Initialize(HandleDropRequest, boardUI.CellSize, handManager);
+        boardUI.Initialize(gameSession.Board);
+        handUI.Initialize(HandleDropRequest, boardUI.CellSize, gameSession.Hands);
 
-        boardData.CellUpdate += boardUI.BoardData_OnCellUpdate;
+        gameSession.GameOver += OnGameOver;
     }
 
-    private void CheckForGameOver()
+    private void OnGameOver()
     {
-        if (IsGameOver())
+        Debug.Log("GameOver");
+    }
+
+    private bool HandleDropRequest(PointerEventData eventData, int slotIndex)
+    {
+        BlockShape? blockShape = gameSession.Hands.CurrentHand[slotIndex];
+
+        if (blockShape is not BlockShape shape)
         {
-            Debug.Log("Game Over");
+            return false;
         }
-    }
-
-    private bool IsGameOver()
-    {
-        foreach (BlockShape? blockData in handManager.CurrentHand)
-        {
-            if (!blockData.HasValue)
-            {
-                continue;
-            }
-            if (boardData.CanPlaceBlockInBoard(blockData.Value))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private bool HandleDropRequest(PointerEventData eventData, BlockShape blockShape)
-    {
         if (
             boardUI.TryScreenPointToBoardPosition(
                 eventData.position,
                 eventData.pressEventCamera,
-                blockShape.Center(),
+                shape.Center(),
                 out BoardPosition blockBaseBoardPosition
             )
         )
         {
-            PlacementResult result = boardData.TryPlaceBlock(blockShape, blockBaseBoardPosition);
-            // scoreManager.update(result);
+            PlacementResult result = gameSession.TryPlaceBlock(slotIndex, blockBaseBoardPosition);
             return result.IsSuccess;
         }
         return false;

@@ -1,14 +1,12 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(GridLayoutGroup))]
 [RequireComponent(typeof(RectTransform))]
 public class BoardUI : MonoBehaviour
 {
-    private BoardData boardData;
+    private IReadOnlyBoard boardData;
 
     [SerializeField]
     private Cell cellPrefab;
@@ -31,9 +29,10 @@ public class BoardUI : MonoBehaviour
     private RectTransform rectTransform;
     private GridLayoutGroup gridLayout;
 
-    public void Initialize(BoardData boardData)
+    public void Initialize(IReadOnlyBoard boardData)
     {
         this.boardData = boardData;
+        boardData.CellUpdate += BoardData_OnCellUpdate;
 
         rectTransform = GetComponent<RectTransform>();
         rectTransform.pivot = Vector2.zero;
@@ -129,9 +128,9 @@ public class BoardUI : MonoBehaviour
         }
     }
 
-    internal void BoardData_OnCellUpdate(object sender, BoardData.CellUpdateData data)
+    internal void BoardData_OnCellUpdate(object sender, CellUpdateData data)
     {
-        bool isFilled = data.State == BoardData.CellState.Filled;
+        bool isFilled = data.State == CellState.Filled;
         UpdateCellState(data.X, data.Y, isFilled);
     }
 

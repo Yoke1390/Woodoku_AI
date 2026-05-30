@@ -5,7 +5,7 @@ using System.Linq;
 public readonly struct BlockShape
 {
     private readonly IReadOnlyList<BlockOffset> _blocks;
-    public IReadOnlyList<BlockOffset> Blocks => _blocks;
+    public IReadOnlyList<BlockOffset> Blocks => _blocks ?? Array.Empty<BlockOffset>();
     public int NBlocks => _blocks.Count;
 
     public int MaxX { get; }

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class HandManager
+public class HandManager : IReadOnlyHands
 {
     private Random random;
     private readonly BlockShape[] _blockShapes;
@@ -36,7 +36,7 @@ public class HandManager
         }
     }
 
-    public BlockShape GetRandomBlockShape()
+    private BlockShape GetRandomBlockShape()
     {
         return _blockShapes[random.Next(0, _blockShapes.Length)];
     }
@@ -53,9 +53,9 @@ public class HandManager
         }
     }
 
-    public void OnBlockPlaced(int index)
+    public void CommitPlacement(int slotIndex)
     {
-        _currentHand[index] = null;
+        _currentHand[slotIndex] = null;
         if (IsHandEmpty())
         {
             GenerateAll();

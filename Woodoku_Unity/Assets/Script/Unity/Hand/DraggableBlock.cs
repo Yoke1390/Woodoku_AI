@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -6,6 +5,7 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(CanvasGroup))]
 public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
+    private int _slotIndex;
     private HandBlock _handBlock;
     private CanvasGroup _canvasGroup;
 
@@ -13,10 +13,10 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     private Vector2 _initialLocalPosition;
 
     private DropHandler _onDropRequested;
-    public event Action BlockPlaced;
 
-    public void SetDropHandler(DropHandler handler)
+    public void Initialize(int slotIndex, DropHandler handler)
     {
+        _slotIndex = slotIndex;
         _onDropRequested = handler;
     }
 
@@ -53,10 +53,9 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        bool success = _onDropRequested?.Invoke(eventData, _handBlock.BlockShape) ?? false;
+        bool success = _onDropRequested?.Invoke(eventData, _slotIndex) ?? false;
         if (success)
         {
-            BlockPlaced?.Invoke();
             Destroy(gameObject);
         }
         else
@@ -73,4 +72,4 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     }
 }
 
-public delegate bool DropHandler(PointerEventData eventData, BlockShape blockShape);
+public delegate bool DropHandler(PointerEventData eventData, int slotIndex);

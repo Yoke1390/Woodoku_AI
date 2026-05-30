@@ -2,19 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class BoardData
+public class BoardData : IReadOnlyBoard
 {
     public int GridSize { get; }
     public int BoardSize { get; }
     public int NGrids { get; }
-
-    // for performance, sbyte can be considered
-    public enum CellState
-    {
-        Empty = 0,
-        Filled = 1,
-        OutOfBoard = -1,
-    }
 
     private CellState[,] board;
 
@@ -112,7 +104,7 @@ public class BoardData
             PlacementResult result = PlaceBlockAndClear(blockShape, blockBaseBoardPosition);
             return result;
         }
-        return new PlacementResult(false, blockShape, 0);
+        return PlacementResult.Failure(blockShape);
     }
 
     private PlacementResult PlaceBlockAndClear(
@@ -284,18 +276,26 @@ public class BoardData
             return false;
         }
     }
+}
 
-    public readonly struct CellUpdateData
+// for performance, sbyte can be considered
+public enum CellState
+{
+    Empty = 0,
+    Filled = 1,
+    OutOfBoard = -1,
+}
+
+public readonly struct CellUpdateData
+{
+    public int X { get; }
+    public int Y { get; }
+    public CellState State { get; }
+
+    public CellUpdateData(int x, int y, CellState state)
     {
-        public int X { get; }
-        public int Y { get; }
-        public CellState State { get; }
-
-        public CellUpdateData(int x, int y, CellState state)
-        {
-            X = x;
-            Y = y;
-            State = state;
-        }
+        X = x;
+        Y = y;
+        State = state;
     }
 }
