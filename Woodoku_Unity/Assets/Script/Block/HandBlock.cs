@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class HandBlock : MonoBehaviour
@@ -14,12 +12,12 @@ public class HandBlock : MonoBehaviour
     private float inSlotCellSizeScale = 0.5f;
     private BlockPiece[] blockPieces;
 
-    public BlockData BlockData { get; private set; }
+    public BlockShape BlockShape { get; private set; }
 
-    public void Initialize(BlockData blockData, float cellSize)
+    public void Initialize(BlockShape blockShape, float cellSize)
     {
-        BlockData = blockData;
-        blockPieces = new BlockPiece[blockData.N_Blocks];
+        BlockShape = blockShape;
+        blockPieces = new BlockPiece[blockShape.NBlocks];
 
         if (cellSize <= 0)
         {
@@ -27,14 +25,14 @@ public class HandBlock : MonoBehaviour
             cellSize = 1f;
         }
 
-        for (int i = 0; i < blockData.N_Blocks; i++)
+        for (int i = 0; i < blockShape.NBlocks; i++)
         {
-            BlockOffset blockOffset = blockData.BlockCells[i];
+            BlockOffset blockOffset = blockShape.Blocks[i];
             BlockPiece newBlockPiece = Instantiate(blockPiecePrefab, blockPiecesParent);
             RectTransform newBlockPieceRectTransform = newBlockPiece.GetComponent<RectTransform>();
 
             newBlockPieceRectTransform.anchoredPosition =
-                ((Vector2)blockOffset - BlockData.Center) * cellSize;
+                ((Vector2)blockOffset - blockShape.Center()) * cellSize;
             newBlockPieceRectTransform.sizeDelta = Vector2.one * cellSize;
 
             blockPieces[i] = newBlockPiece;

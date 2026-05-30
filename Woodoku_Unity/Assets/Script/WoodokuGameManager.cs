@@ -10,22 +10,41 @@ public class WoodokuGameManager : MonoBehaviour
     private BoardUI boardUI;
 
     [SerializeField]
-    private HandManager handManager;
+    private HandUI handUI;
 
     [SerializeField]
     private GameSetting gameSetting;
 
     private BoardData boardData;
+    private HandManager handManager;
+
+    public const int NHandSlots = 3;
 
     void Start()
+    {
+        Initialize();
+        handManager.Begin();
+    }
+
+    private void Initialize()
     {
         boardData = new BoardData(gameSetting.GridSize);
         boardUI.Initialize(boardData);
 
-        uint randomSeed = 1234; // test
-        handManager.Initialize(HandleDropRequest, boardUI.CellSize, randomSeed);
-        handManager.BlockPlaced += CheckForGameOver;
-        handManager.HandBlockGenerated += CheckForGameOver;
+        int randomSeed = 1234; // test
+
+        BlockData[] blockDatas = Resources.LoadAll<BlockData>("");
+        List<BlockShape> blockShapes = new();
+        foreach (BlockData data in blockDatas)
+        {
+            BlockShape shape = data.ToShape();
+            blockShapes.Add(shape);
+        }
+
+        handManager = new(blockShapes, NHandSlots, randomSeed);
+        handManager.HandSettled += CheckForGameOver;
+
+        handUI.Initialize(HandleDropRequest, boardUI.CellSize, handManager);
 
         boardData.CellUpdate += boardUI.BoardData_OnCellUpdate;
     }
@@ -40,13 +59,13 @@ public class WoodokuGameManager : MonoBehaviour
 
     private bool IsGameOver()
     {
-        foreach (BlockData blockData in handManager.CurrentHandBlockDatas)
+        foreach (BlockShape? blockData in handManager.CurrentHand)
         {
-            if (blockData == null)
+            if (!blockData.HasValue)
             {
                 continue;
             }
-            if (boardData.CanPlaceBlockInBoard(blockData))
+            if (boardData.CanPlaceBlockInBoard(blockData.Value))
             {
                 return false;
             }
@@ -54,18 +73,18 @@ public class WoodokuGameManager : MonoBehaviour
         return true;
     }
 
-    private bool HandleDropRequest(PointerEventData eventData, BlockData blockData)
+    private bool HandleDropRequest(PointerEventData eventData, BlockShape blockShape)
     {
         if (
             boardUI.TryScreenPointToBoardPosition(
                 eventData.position,
                 eventData.pressEventCamera,
-                blockData.Center,
+                blockShape.Center(),
                 out BoardPosition blockBaseBoardPosition
             )
         )
         {
-            PlacementResult result = boardData.TryPlaceBlock(blockData, blockBaseBoardPosition);
+            PlacementResult result = boardData.TryPlaceBlock(blockShape, blockBaseBoardPosition);
             // scoreManager.update(result);
             return result.IsSuccess;
         }

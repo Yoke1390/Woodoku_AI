@@ -12,13 +12,10 @@ public class BlockData : ScriptableObject
     private BlockOffset[] _cachedBlockCells;
     public BlockOffset[] BlockCells => _cachedBlockCells;
 
-    private Vector2 _cachedCenter;
-    private int _cachedMaxX;
-    private int _cachedMaxY;
-
-    public Vector2 Center => _cachedCenter;
-    public int MaxX => _cachedMaxX;
-    public int MaxY => _cachedMaxY;
+    public BlockShape ToShape()
+    {
+        return new BlockShape(BlockCells);
+    }
 
     private void OnEnable()
     {
@@ -64,9 +61,6 @@ public class BlockData : ScriptableObject
         if (blockCells == null || blockCells.Length == 0)
         {
             _cachedBlockCells = Array.Empty<BlockOffset>();
-            _cachedCenter = Vector2.zero;
-            _cachedMaxX = 0;
-            _cachedMaxY = 0;
             return;
         }
 
@@ -75,15 +69,5 @@ public class BlockData : ScriptableObject
         {
             _cachedBlockCells[i] = (BlockOffset)blockCells[i];
         }
-
-        int maxX = blockCells.Max(cell => cell.x);
-        _cachedMaxX = maxX;
-        int maxY = blockCells.Max(cell => cell.y);
-        _cachedMaxY = maxY;
-
-        float centerX = maxX / 2f;
-        float centerY = maxY / 2f;
-        var center = new Vector2(centerX, centerY);
-        _cachedCenter = center;
     }
 }

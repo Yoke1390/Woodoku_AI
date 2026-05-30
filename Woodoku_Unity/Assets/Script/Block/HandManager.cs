@@ -1,88 +1,70 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
 
-public class HandManager : MonoBehaviour
+public class HandManager
 {
-    [SerializeField]
-    private RectTransform[] handSlots;
+    private Random random;
+    private readonly BlockShape[] _blockShapes;
 
-    [SerializeField]
-    private HandBlock handBlockPrefab;
+    private BlockShape?[] _currentHand;
+    public IReadOnlyList<BlockShape?> CurrentHand => _currentHand;
 
-    private Unity.Mathematics.Random random;
-    private BlockData[] blockDatas;
-    private BlockData[] _currentHandBlockDatas;
-    public IReadOnlyList<BlockData> CurrentHandBlockDatas => _currentHandBlockDatas;
-    private DropHandler _dropHandler;
-    private float _cellSize;
+    public event Action HandSettled;
+    public event Action<int, BlockShape> HandBlockGenerated;
 
-    public event Action BlockPlaced;
-    public event Action HandBlockGenerated;
-
-    void Awake()
+    public HandManager(IEnumerable<BlockShape> blockShapes, int NHandSlots, int randomSeed)
     {
-        blockDatas = Resources.LoadAll<BlockData>("");
+        _blockShapes = blockShapes.ToArray();
+        if (_blockShapes.Length == 0)
+        {
+            throw new ArgumentException("No Block Shapes passed", nameof(_blockShapes));
+        }
 
-        Debug.Log($"{blockDatas.Length} Block Data was found");
-
-        _currentHandBlockDatas = new BlockData[handSlots.Length];
-    }
-
-    public void Initialize(DropHandler dropHandler, float cellSize, uint randomSeed)
-    {
         random = new(randomSeed);
-        _dropHandler = dropHandler;
-        _cellSize = cellSize;
-        GenerateAll();
+
+        if (NHandSlots > 0)
+        {
+            _currentHand = new BlockShape?[NHandSlots];
+        }
+        else
+        {
+            throw new ArgumentException(
+                "Number of Hand Blocks must be popsitive",
+                nameof(NHandSlots)
+            );
+        }
     }
 
-    private BlockData GetSampleBlockData()
+    public BlockShape GetRandomBlockShape()
     {
-        // tmp
-        return blockDatas[13];
+        return _blockShapes[random.Next(0, _blockShapes.Length)];
     }
 
-    public BlockData GetRandomBlockData()
-    {
-        return blockDatas[random.NextInt(0, blockDatas.Length)];
-    }
+    public void Begin() => GenerateAll();
 
     private void GenerateAll()
     {
-        for (int i = 0; i < handSlots.Length; i++)
+        for (int i = 0; i < _currentHand.Length; i++)
         {
-            BlockData blockData = GetRandomBlockData();
-            GenerateHandBlock(i, blockData);
+            BlockShape blockShape = GetRandomBlockShape();
+            _currentHand[i] = blockShape;
+            HandBlockGenerated?.Invoke(i, blockShape);
         }
-        HandBlockGenerated?.Invoke();
     }
 
-    private void GenerateHandBlock(int slotIndex, BlockData blockData)
+    public void OnBlockPlaced(int index)
     {
-        _currentHandBlockDatas[slotIndex] = blockData;
-
-        HandBlock newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
-        newHandBlock.Initialize(blockData, _cellSize);
-
-        var draggableBlock = newHandBlock.GetComponent<DraggableBlock>();
-        draggableBlock.SetDropHandler(_dropHandler);
-        draggableBlock.BlockPlaced += () => OnBlockPlaced(slotIndex);
-    }
-
-    private void OnBlockPlaced(int slotIndex)
-    {
-        _currentHandBlockDatas[slotIndex] = null;
+        _currentHand[index] = null;
         if (IsHandEmpty())
         {
             GenerateAll();
         }
-
-        BlockPlaced?.Invoke();
+        HandSettled?.Invoke();
     }
 
     private bool IsHandEmpty()
     {
-        return System.Array.TrueForAll(_currentHandBlockDatas, block => block == null);
+        return Array.TrueForAll(_currentHand, hand => !hand.HasValue);
     }
 }

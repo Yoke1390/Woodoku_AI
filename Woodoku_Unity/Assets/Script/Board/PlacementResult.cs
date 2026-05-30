@@ -6,20 +6,20 @@ public readonly struct PlacementResult
     private readonly IReadOnlyList<BoardPosition> _clearedCells;
 
     public bool IsSuccess { get; }
-    public BlockData BlockData { get; }
+    public BlockShape BlockShape { get; }
     public int NClearedTimes { get; }
     public IReadOnlyList<BoardPosition> ClearedCells =>
         _clearedCells ?? Array.Empty<BoardPosition>();
 
     public PlacementResult(
         bool isSuccess,
-        BlockData blockData,
+        BlockShape blockshape,
         int nClearedTimes = 0,
         IReadOnlyList<BoardPosition> clearedCells = null
     )
     {
         IsSuccess = isSuccess;
-        BlockData = blockData;
+        BlockShape = blockshape;
         NClearedTimes = nClearedTimes;
         _clearedCells = clearedCells;
     }

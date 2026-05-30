@@ -34,15 +34,17 @@ public class BoardUI : MonoBehaviour
     public void Initialize(BoardData boardData)
     {
         this.boardData = boardData;
-        rectTransform = GetComponent<RectTransform>();
-        gridLayout = GetComponent<GridLayoutGroup>();
 
+        rectTransform = GetComponent<RectTransform>();
+        rectTransform.pivot = Vector2.zero;
+
+        gridLayout = GetComponent<GridLayoutGroup>();
         // XY座標の向きを合わせる (x：右が正, y：上が正)
         gridLayout.startCorner = GridLayoutGroup.Corner.LowerLeft;
-
         gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         gridLayout.constraintCount = boardData.BoardSize;
-
+        gridLayout.padding = new RectOffset(0, 0, 0, 0);
+        gridLayout.spacing = Vector2.zero;
         // UIのレイアウト計算（Horizontal Layout Groupなど）を強制的に完了させる
         Canvas.ForceUpdateCanvases();
 
@@ -108,21 +110,10 @@ public class BoardUI : MonoBehaviour
 
     private void AdjustCellSize()
     {
-        int boardSize = boardData.BoardSize;
-        float availableWidth =
-            rectTransform.rect.width
-            - gridLayout.padding.left
-            - gridLayout.padding.right
-            - (boardSize - 1) * gridLayout.spacing.x;
-        float availableHeight =
-            rectTransform.rect.height
-            - gridLayout.padding.top
-            - gridLayout.padding.bottom
-            - (boardSize - 1) * gridLayout.spacing.y;
+        CellSize =
+            Mathf.Min(rectTransform.rect.width, rectTransform.rect.height) / boardData.BoardSize;
 
-        CellSize = Mathf.Min(availableWidth, availableHeight) / boardSize;
-
-        gridLayout.cellSize = new Vector2(CellSize, CellSize);
+        gridLayout.cellSize = CellSize * Vector2.one;
     }
 
     public void UpdateCellState(int x, int y, bool isFilled)

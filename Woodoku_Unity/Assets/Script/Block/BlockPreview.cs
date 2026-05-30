@@ -46,6 +46,6 @@ public class BlockPreview : MonoBehaviour
         slotRectTransform.sizeDelta = new Vector2(slotSize, slotSize);
 
         HandBlock newHandBlock = Instantiate(handBlockPrefab, slotRectTransform);
-        newHandBlock.Initialize(blockData, cellSize);
+        newHandBlock.Initialize(blockData.ToShape(), cellSize);
     }
 }

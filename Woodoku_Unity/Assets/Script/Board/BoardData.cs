@@ -71,14 +71,14 @@ public class BoardData
         SetCell(boardPosition, state);
     }
 
-    public bool CanPlaceBlockInBoard(BlockData blockData)
+    public bool CanPlaceBlockInBoard(BlockShape blockShape)
     {
-        for (int x = 0; x < BoardSize - blockData.MaxX; x++)
+        for (int x = 0; x < BoardSize - blockShape.MaxX; x++)
         {
-            for (int y = 0; y < BoardSize - blockData.MaxY; y++)
+            for (int y = 0; y < BoardSize - blockShape.MaxY; y++)
             {
                 BoardPosition blockBaseBoardPosition = new(x, y);
-                if (CanPlaceBlock(blockData, blockBaseBoardPosition))
+                if (CanPlaceBlock(blockShape, blockBaseBoardPosition))
                 {
                     return true;
                 }
@@ -87,9 +87,9 @@ public class BoardData
         return false;
     }
 
-    public bool CanPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
+    public bool CanPlaceBlock(BlockShape blockShape, BoardPosition blockBaseBoardPosition)
     {
-        foreach (BlockOffset cellOffset in blockData.BlockCells)
+        foreach (BlockOffset cellOffset in blockShape.Blocks)
         {
             BoardPosition targetPos = blockBaseBoardPosition + cellOffset;
             if (GetCell(targetPos) != CellState.Empty)
@@ -101,23 +101,26 @@ public class BoardData
         return true;
     }
 
-    public PlacementResult TryPlaceBlock(BlockData blockData, BoardPosition blockBaseBoardPosition)
-    {
-        bool canPlace = CanPlaceBlock(blockData, blockBaseBoardPosition);
-        if (canPlace)
-        {
-            PlacementResult result = PlaceBlockAndClear(blockData, blockBaseBoardPosition);
-            return result;
-        }
-        return new PlacementResult(false, blockData, 0);
-    }
-
-    private PlacementResult PlaceBlockAndClear(
-        BlockData blockData,
+    public PlacementResult TryPlaceBlock(
+        BlockShape blockShape,
         BoardPosition blockBaseBoardPosition
     )
     {
-        foreach (BlockOffset blockOffset in blockData.BlockCells)
+        bool canPlace = CanPlaceBlock(blockShape, blockBaseBoardPosition);
+        if (canPlace)
+        {
+            PlacementResult result = PlaceBlockAndClear(blockShape, blockBaseBoardPosition);
+            return result;
+        }
+        return new PlacementResult(false, blockShape, 0);
+    }
+
+    private PlacementResult PlaceBlockAndClear(
+        BlockShape blockShape,
+        BoardPosition blockBaseBoardPosition
+    )
+    {
+        foreach (BlockOffset blockOffset in blockShape.Blocks)
         {
             // called after validation
             BoardPosition pos = blockBaseBoardPosition + blockOffset;
@@ -128,7 +131,7 @@ public class BoardData
 
         ClearCells(cellsToClearList);
 
-        return new PlacementResult(true, blockData, nClearedTimes, cellsToClearList);
+        return new PlacementResult(true, blockShape, nClearedTimes, cellsToClearList);
     }
 
     private void ClearCells(IEnumerable<BoardPosition> cellsToClear)

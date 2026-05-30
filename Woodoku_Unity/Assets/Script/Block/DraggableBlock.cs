@@ -6,12 +6,11 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(CanvasGroup))]
 public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    private HandBlock handBlock;
-    private BlockData blockData;
-    private CanvasGroup canvasGroup;
+    private HandBlock _handBlock;
+    private CanvasGroup _canvasGroup;
 
-    private RectTransform parentRectTransform;
-    private Vector2 initialLocalPosition;
+    private RectTransform _parentRectTransform;
+    private Vector2 _initialLocalPosition;
 
     private DropHandler _onDropRequested;
     public event Action BlockPlaced;
@@ -23,19 +22,17 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     private void Start()
     {
-        handBlock = GetComponent<HandBlock>();
-        canvasGroup = GetComponent<CanvasGroup>();
+        _handBlock = GetComponent<HandBlock>();
+        _canvasGroup = GetComponent<CanvasGroup>();
 
-        blockData = handBlock.BlockData;
-
-        parentRectTransform = transform.parent.GetComponent<RectTransform>();
-        initialLocalPosition = transform.localPosition;
+        _parentRectTransform = transform.parent.GetComponent<RectTransform>();
+        _initialLocalPosition = transform.localPosition;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        handBlock.SetScale(1f);
-        canvasGroup.blocksRaycasts = false;
+        _handBlock.SetScale(1f);
+        _canvasGroup.blocksRaycasts = false;
         transform.SetAsLastSibling();
     }
 
@@ -43,7 +40,7 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     {
         if (
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                parentRectTransform,
+                _parentRectTransform,
                 eventData.position,
                 eventData.pressEventCamera,
                 out Vector2 localPointerPosition
@@ -56,7 +53,7 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        bool success = _onDropRequested?.Invoke(eventData, blockData) ?? false;
+        bool success = _onDropRequested?.Invoke(eventData, _handBlock.BlockShape) ?? false;
         if (success)
         {
             BlockPlaced?.Invoke();
@@ -70,10 +67,10 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     private void ResetBlock()
     {
-        canvasGroup.blocksRaycasts = true;
-        transform.localPosition = initialLocalPosition;
-        handBlock.ResetScale();
+        _canvasGroup.blocksRaycasts = true;
+        transform.localPosition = _initialLocalPosition;
+        _handBlock.ResetScale();
     }
 }
 
-public delegate bool DropHandler(PointerEventData eventData, BlockData blockData);
+public delegate bool DropHandler(PointerEventData eventData, BlockShape blockShape);
