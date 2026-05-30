@@ -4,6 +4,8 @@ using System.Collections.Generic;
 public interface IReadOnlyHands
 {
     IReadOnlyList<BlockShape?> CurrentHand { get; }
+    int NSlots { get; }
+    event Action<int> HandBlockConsumed;
     event Action<int, BlockShape> HandBlockGenerated;
 }
 

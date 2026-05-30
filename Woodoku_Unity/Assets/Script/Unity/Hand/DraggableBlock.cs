@@ -54,11 +54,7 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     public void OnEndDrag(PointerEventData eventData)
     {
         bool success = _onDropRequested?.Invoke(eventData, _slotIndex) ?? false;
-        if (success)
-        {
-            Destroy(gameObject);
-        }
-        else
+        if (!success)
         {
             ResetBlock();
         }

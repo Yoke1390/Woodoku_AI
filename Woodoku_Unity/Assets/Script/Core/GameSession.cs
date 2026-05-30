@@ -26,11 +26,11 @@ public class GameSession
         int gridSize,
         IEnumerable<BlockShape> blockShapes,
         int nHandSlots,
-        int randomSeed = TestSeed
+        int seed = TestSeed
     )
     {
         boardData = new(gridSize);
-        handManager = new(blockShapes, nHandSlots, randomSeed);
+        handManager = new(blockShapes, nHandSlots, seed);
         scoreManager = new();
 
         handManager.HandSettled += CheckForGameOver;

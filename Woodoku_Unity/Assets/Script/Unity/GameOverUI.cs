@@ -21,6 +21,7 @@ public class GameOverUI : MonoBehaviour
 
     private void OnRestart()
     {
+        Hide();
         Restart?.Invoke();
     }
 

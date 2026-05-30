@@ -9,9 +9,11 @@ public class HandManager : IReadOnlyHands
     private readonly BlockShape[] _blockShapes;
 
     private BlockShape?[] _currentHand;
-    public IReadOnlyList<BlockShape?> CurrentHand => _currentHand;
 
+    public IReadOnlyList<BlockShape?> CurrentHand => _currentHand;
+    public int NSlots { get; }
     public event Action HandSettled;
+    public event Action<int> HandBlockConsumed;
     public event Action<int, BlockShape> HandBlockGenerated;
 
     public HandManager(IEnumerable<BlockShape> blockShapes, int NHandSlots, int randomSeed)
@@ -26,6 +28,7 @@ public class HandManager : IReadOnlyHands
 
         if (NHandSlots > 0)
         {
+            NSlots = NHandSlots;
             _currentHand = new BlockShape?[NHandSlots];
         }
         else
@@ -65,6 +68,7 @@ public class HandManager : IReadOnlyHands
     public void CommitPlacement(int slotIndex)
     {
         _currentHand[slotIndex] = null;
+        HandBlockConsumed?.Invoke(slotIndex);
         if (IsHandEmpty())
         {
             GenerateAll();
