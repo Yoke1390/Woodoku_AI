@@ -67,7 +67,7 @@ Cell (RectTransform)
 - [x] 🎯 手札エリア (`HandArea`) の UI 構築・3スロット配置。
 - [x] 🎯 `HandBlock` クラスの作成（`BlockData` から `BlockPiece` を子オブジェクトとして生成・配置）。
 - [x] 🎯 `HandManager` クラスの作成（3つの手札スロット管理、`Resources.LoadAll<BlockData>` で全ブロック取得）。
-- [x] 🎯 **ブロックのランダム選出**: `HandManager.GetRandomBlockData()` が `Unity.Mathematics.Random.NextInt` で実装済み（`Initialize` のシードで再現可能）。固定取得用の `GetSampleBlockData()` は未使用のまま残存。
+- [x] 🎯 **ブロックのランダム選出**: `HandManager.GetRandomBlockShape()` が `System.Random` で実装済み（コンストラクタの `randomSeed` で再現可能）。ロジック層は `BlockData`(ScriptableObject) ではなく純粋型 `BlockShape` を扱う。
 
 ## 4. ドラッグ＆ドロップ機能の実装（UI操作と内部ロジックの分離）
 
@@ -92,7 +92,8 @@ Cell (RectTransform)
 - [x] 🎯 配置失敗時の手札位置への復帰（§4 と一体）。
 - [x] 🔧 **配置〜消去ロジックの `BoardData` への集約**: 現在 `WoodokuGameManager.PlaceBlock` (private) が `SetCell` を直接呼んでいる。§6 の消去判定と一体化させるため、`BoardData.PlaceBlock(BlockData, BoardPosition) : PlacementResult` に責務移譲する設計に変更。
 - [x] 🔧 `WoodokuGameManager.GetBlockBaseBoardPosition` の薄いラッパー削除: 中身が `boardUI.TryScreenPointToBoardPosition` への単純な転送のみ。`HandleDropRequest` 内に直接書く。
-- [ ] 🔧 起動時テスト用の `boardData.SetCell(0, 0, 1)` / `SetCell(2, 7, 1)` を削除 (`WoodokuGameManager.Start`)。
+- [x] 🔧 起動時テスト用の `SetCell` 呼び出しは削除済み (`WoodokuGameManager`)。
+- [ ] 🔧 ハードコードされた乱数シード `randomSeed = 1234 // test` の整理（`WoodokuGameManager.Initialize`）。本番投入時にシード注入 or ランダム化。
 
 ## 6. 消去判定（ラインと3x3ブロック）の実装
 
@@ -107,19 +108,18 @@ ROADMAP 方針に従い、判定ロジックは **すべて `BoardData` に集�
 
 ### 6.2 配置〜消去の統合
 
-- [x] 🎯 `BoardData.PlaceBlock(BlockData, BoardPosition) : PlacementResult` の実装（配置 → スキャン → クリアを一気通貫）。
-- [x] 🎯 結果オブジェクト `PlacementResult` の定義:
-  - `Success` (bool)
-  - `ClearedLines` (IReadOnlyList<...>): 後のスコア計算・エフェクト用
+- [x] 🎯 `BoardData.TryPlaceBlock(BlockShape, BoardPosition) : PlacementResult` の実装（配置 → スキャン → クリアを一気通貫）。
+- [x] 🎯 結果オブジェクト `PlacementResult`（`readonly struct`）の定義:
+  - `IsSuccess` (bool)
+  - `NClearedTimes` (int) / `ClearedCells` (IReadOnlyList<BoardPosition>): スコア計算・エフェクト用
+  - 失敗用ファクトリ `PlacementResult.Failure`。
 - [x] 🎯 消去対象セルの `SetCell(pos, 0)` で `CellUpdate` イベント発火 → UI が自動的に空きセル表示に切り替わることを確認。
 
 ## 7. ゲームサイクルとゲームオーバー判定
 
 ### 7.1 手札の消費と補充
 
-- [x] 🎯 手札ブロック消費の通知経路追加:
-  - 現状 `DraggableBlock.OnEndDrag` 成功時に `Destroy(gameObject)` するだけで `HandManager` は知らない。
-  - `DropHandler` とは別の `Action<int slotIndex>` 等で `HandManager` に通知する。
+- [x] 🎯 手札ブロック消費の通知経路: `DropHandler` に `slotIndex` を載せ、配置成功時に `GameSession.TryPlaceBlock(slotIndex, pos)` が内部で `HandManager.CommitPlacement(slotIndex)` を呼ぶ（盤面更新と手札消費が原子的）。
 - [x] 🎯 `HandManager` に消費カウント・残りスロット管理を追加。
 - [x] 🎯 `HandManager.HandEmpty` イベント（または同等の通知）を追加。
 - [x] 🎯 全スロット消費時に、`HandManager` が新たに3つのブロックを補充。
@@ -127,14 +127,16 @@ ROADMAP 方針に従い、判定ロジックは **すべて `BoardData` に集�
 ### 7.2 手詰まり判定
 
 - [x] 🎯 タイミング: ブロック補充直後 / 配置直後の両方で実行。
-- [x] 🎯 判定ロジック: 手札の各 `BlockData` について、盤面全座標 (0,0)〜(BoardSize-1, BoardSize-1) で `CanPlaceBlock` を試す全探索。
-- [x] 🎯 判定 API: `WoodokuGameManager.HasAnyValidPlacement(IEnumerable<BlockData>) : bool`。
+- [x] 🎯 判定ロジック: 手札の各 `BlockShape` について `BoardData.CanPlaceBlockInBoard`（盤面全座標を試す全探索）。
+- [x] 🎯 判定 API: `GameSession.IsGameOver()` を `HandSettled` 契機で実行し、成立時に `GameOver` イベント発火。
 - [x] 🎯 1箇所でも置ければゲーム続行、どこにも置けなければゲームオーバー。
 
 ### 7.3 ゲームオーバー処理
 
-- [ ] 🎯 ゲーム状態の管理: `enum GameState { Playing, GameOver }`。
-- [ ] 🎯 ゲームオーバー UI の表示。
+> `GameSession.GameOver` イベントは実装済み（手詰まり時に発火）。以下の状態管理・UI・リスタートは未着手。
+
+- [x] 🎯 ゲーム状態の管理: `enum GameState { Playing, GameOver }`。
+- [x] 🎯 ゲームオーバー UI の表示。
 - [ ] 🎯 リスタート機能: `BoardData.Reset()` + 手札再生成 + 状態リセット。
 
 ## 8. AI 連携用 API の整備
@@ -143,24 +145,37 @@ ROADMAP 冒頭の「AI環境として機能させる」最終目標に向けた�
 
 ### 8.1 観測 API
 
-- [ ] 🎯 `WoodokuGameManager.CurrentHand : IReadOnlyList<BlockData>` — 現在の手札。
-- [ ] 🎯 `WoodokuGameManager.CurrentBoard` — 読み取り専用の盤面スナップショット（`int[,]` のコピー、または専用 ReadOnly 型）。
-- [ ] 🎯 `WoodokuGameManager.CurrentState : GameState` — 現在のゲーム状態。
+- [x] 🎯 手札の観測: `GameSession.Hands : IReadOnlyHands`（`CurrentHand : IReadOnlyList<BlockShape?>` + `HandBlockGenerated`）。
+- [x] 🎯 盤面の観測: `GameSession.Board : IReadOnlyBoard`（`GetCell(BoardPosition)` + `GridSize`/`BoardSize`/`NGrids` + `CellUpdate`）。専用の読み取り専用インターフェースで公開済み。
+- [ ] 🎯 ゲーム状態の観測: `GameSession.CurrentState : GameState` — `GameState` enum 未実装のため保留（§7.3 と一体）。
 
 ### 8.2 行動 API
 
-- [ ] 🎯 `WoodokuGameManager.TryPlaceBlock(BlockData, BoardPosition) : bool` — 未実装。現状、配置は `private HandleDropRequest(PointerEventData, BlockData)` 経由でのみ可能で、AI から呼べる公開 API がない。ロジック本体の `BoardData.TryPlaceBlock(BlockData, BoardPosition) : PlacementResult` は存在するので、それを薄くラップする公開メソッドの追加が必要。
+- [x] 🎯 行動 API: `GameSession.TryPlaceBlock(int slotIndex, BoardPosition) : PlacementResult` を実装済み。行動空間は「手札スロット番号 × 盤面基準位置」。空スロット等の無効手は例外ではなく `PlacementResult.Failure` を返す。
+- [ ] 🔧 範囲外 `slotIndex` のガード: 現状 `CurrentHand[slotIndex]` の配列アクセスで例外が飛ぶ。空スロットと同様 `Failure` に統一する。
 
 ### 8.3 イベント
 
-- [ ] 🎯 `WoodokuGameManager.StateChanged` — Playing / GameOver の遷移通知（AI のエピソード終端検知用）。
-- [ ] 🎯 配置・消去・補充の各イベント（学習信号として有用）。
+- [x] 🎯 ゲームオーバー通知: `GameSession.GameOver` イベント（エピソード終端検知用）。
+- [ ] 🎯 `StateChanged` — Playing ↔ GameOver の双方向遷移通知。`GameState` 導入後に整備。
+- [ ] 🎯 配置・消去・補充の各イベントを `GameSession` の公開面に出す（学習信号用。ロジック層には `CellUpdate`/`HandSettled`/`HandBlockGenerated` が既に存在）。
 
 ---
 
 ## リファクタリング: 横断的な改善
 
 機能実装と並行して、もしくは合間に行う構造改善。優先度順。
+
+### ロジック層とUI層の分離（最重要・ほぼ完了）
+
+ROADMAP 冒頭の「データ管理と描画を明確に分ける」を、規律ではなく**コンパイラ強制**まで到達させた一連の作業。
+
+- [x] 🔧 **値型から UnityEngine を排除**: `BoardPosition` / `BlockOffset` の `Vector2Int` ラップを廃し、素の `int x, y` に。Unity 依存の変換は UI 側の拡張メソッド（`UnityExtensions`）へ分離。
+- [x] 🔧 **ロジック用の純粋型 `BlockShape` を分離**: `BlockData`(ScriptableObject) はオーサリング/インポート専用、ゲームロジックは `BlockShape` を扱う。`BlockData.ToShape()` が境界変換。
+- [x] 🔧 **ドメイン型のトップレベル化**: `CellState` / `CellUpdateData` を `BoardData` のネストから独立した Core 型へ。
+- [x] 🔧 **asmdef 分割**: `Woodoku.Core`（`noEngineReferences: true` で UnityEngine 参照禁止）と `Woodoku.Unity`（Core を参照）。依存は Unity → Core の一方向で、論理層に `using UnityEngine` を書くとコンパイルエラーになる。
+- [x] 🎯 **`GameSession` 抽出**: `BoardData` + `HandManager` を束ねる純粋なゲーム本体。`WoodokuGameManager`(MonoBehaviour) は Resources 読込・UI 配線・画面↔盤面変換だけの薄いアダプタに。
+- [x] 🔧 **読み取り専用インターフェース**: `IReadOnlyBoard` / `IReadOnlyHands` を UI に渡し、`GameSession` 内部の可変な `BoardData`/`HandManager` は private 化。盤面変更の経路は `GameSession.TryPlaceBlock` に一本化。
 
 ### Singleton 依存の整理
 
@@ -176,5 +191,6 @@ ROADMAP 冒頭の「AI環境として機能させる」最終目標に向けた�
 ### コード品質
 
 - [x] 🔧 `BoardData.CanPlaceBlock` 内の `Debug.Log` 整理: 現コードに `Debug.Log` は残っていない。
-- [ ] 🔧 起動時テスト用 `SetCell` の削除（§5 リファクタと同じ）。
-- [ ] 🔧 `BoardUI.BoradData_OnCellUpdate` のタイポ修正（`Borad` → `Board`）。
+- [x] 🔧 起動時テスト用 `SetCell` の削除済み（§5 と同じ）。
+- [x] 🔧 `BoardUI.BoardData_OnCellUpdate` のタイポ修正済み（`Borad` → `Board`）。
+- [ ] 🔧 `PlacementResult.Failure` の `BlockShape` が `default`（`_blocks == null` の無効値）になる問題: 現状 `IsSuccess` しか読まれず無害だが、`BlockShape` を消費する前に整理（フィールド自体を YAGNI で持たない等）。

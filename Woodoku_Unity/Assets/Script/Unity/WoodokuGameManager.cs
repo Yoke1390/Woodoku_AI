@@ -15,6 +15,9 @@ public class WoodokuGameManager : MonoBehaviour
     [SerializeField]
     private GameSetting gameSetting;
 
+    [SerializeField]
+    private GameOverUI gameOverUI;
+
     private GameSession gameSession;
 
     public const int NHandSlots = 3;
@@ -47,7 +50,7 @@ public class WoodokuGameManager : MonoBehaviour
 
     private void OnGameOver()
     {
-        Debug.Log("GameOver");
+        gameOverUI.Show();
     }
 
     private bool HandleDropRequest(PointerEventData eventData, int slotIndex)

@@ -1,11 +1,18 @@
 using System;
 using System.Collections.Generic;
 
+public enum GameState
+{
+    Playing,
+    GameOver,
+}
+
 public class GameSession
 {
     private readonly BoardData boardData;
     private readonly HandManager handManager;
 
+    public GameState State { get; private set; }
     public IReadOnlyBoard Board => boardData;
     public IReadOnlyHands Hands => handManager;
     public event Action GameOver;
@@ -26,12 +33,14 @@ public class GameSession
     public void Begin()
     {
         handManager.Begin();
+        State = GameState.Playing;
     }
 
     private void CheckForGameOver()
     {
         if (IsGameOver())
         {
+            State = GameState.GameOver;
             GameOver?.Invoke();
         }
     }
@@ -54,16 +63,16 @@ public class GameSession
 
     public PlacementResult TryPlaceBlock(int slotIndex, BoardPosition blockBaseBoardPosition)
     {
-        if (slotIndex < 0 || slotIndex >= handManager.CurrentHand.Count)
-        {
+        if (State == GameState.GameOver)
             return PlacementResult.Failure();
-        }
+
+        if (slotIndex < 0 || slotIndex >= handManager.CurrentHand.Count)
+            return PlacementResult.Failure();
 
         BlockShape? blockShape = handManager.CurrentHand[slotIndex];
+
         if (!blockShape.HasValue)
-        {
             return PlacementResult.Failure();
-        }
 
         PlacementResult result = boardData.TryPlaceBlock(blockShape.Value, blockBaseBoardPosition);
 
