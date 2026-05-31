@@ -233,7 +233,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 156.66663, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &46505668
 MonoBehaviour:
@@ -389,7 +389,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 156.66663, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &198316185
 MonoBehaviour:
@@ -893,7 +893,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 156.66663, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &582910761
 MonoBehaviour:
@@ -1177,7 +1177,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 509.99988, y: 509.99988}
+  m_SizeDelta: {x: 0, y: 509.99988}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &765004315
 MonoBehaviour:
@@ -1637,6 +1637,7 @@ MonoBehaviour:
   handUI: {fileID: 407431174}
   gameOverUI: {fileID: 1988603510}
   scoreUI: {fileID: 1059282865}
+  seed: 12234
 --- !u!1 &1577586238
 GameObject:
   m_ObjectHideFlags: 0

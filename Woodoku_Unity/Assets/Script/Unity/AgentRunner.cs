@@ -25,6 +25,9 @@ public class AgentRunner : MonoBehaviour // WoodokuGameManager の人間入力�
     [SerializeField]
     private ScoreUI scoreUI;
 
+    [SerializeField]
+    private int seed = 0;
+
     private GameSession session;
     private IWoodokuAgent agent;
 
@@ -53,7 +56,7 @@ public class AgentRunner : MonoBehaviour // WoodokuGameManager の人間入力�
     {
         agent = new RandomAgent();
 
-        session.Begin(seed: 0);
+        session.Begin(seed);
         yield return StartCoroutine(Run());
     }
 

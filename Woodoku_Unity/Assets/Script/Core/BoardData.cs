@@ -12,6 +12,8 @@ public class BoardData : IReadOnlyBoard
 
     public event EventHandler<CellUpdateData> CellUpdate;
 
+    public BoardSnapShot ToSnapShot() => new(GridSize, board);
+
     public BoardData(int gridSize)
     {
         GridSize = gridSize;
@@ -263,9 +265,14 @@ public class BoardData : IReadOnlyBoard
 
     private bool IsInBoard(BoardPosition boardPosition)
     {
+        return IsInBoard(boardPosition, BoardSize);
+    }
+
+    internal static bool IsInBoard(BoardPosition boardPosition, int boardSize)
+    {
         int x = boardPosition.x;
         int y = boardPosition.y;
-        return 0 <= x && x < BoardSize && 0 <= y && y < BoardSize;
+        return 0 <= x && x < boardSize && 0 <= y && y < boardSize;
     }
 
     public bool TryOffset(

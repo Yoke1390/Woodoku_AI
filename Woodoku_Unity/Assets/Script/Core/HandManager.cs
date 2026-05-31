@@ -43,6 +43,7 @@ public class HandManager : IReadOnlyHands
     public void Reset(int? newSeed = null)
     {
         random = new(newSeed ?? _randomSeed);
+        ConsumeAllHand();
         GenerateAll();
     }
 
@@ -57,11 +58,23 @@ public class HandManager : IReadOnlyHands
 
     private void GenerateAll()
     {
-        for (int i = 0; i < _currentHand.Length; i++)
+        for (int i = 0; i < NSlots; i++)
         {
             BlockShape blockShape = GetRandomBlockShape();
             _currentHand[i] = blockShape;
             HandBlockGenerated?.Invoke(i, blockShape);
+        }
+    }
+
+    private void ConsumeAllHand()
+    {
+        for (int i = 0; i < NSlots; i++)
+        {
+            if (_currentHand[i].HasValue)
+            {
+                _currentHand[i] = null;
+                HandBlockConsumed?.Invoke(i);
+            }
         }
     }
 
