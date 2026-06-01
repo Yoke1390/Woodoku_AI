@@ -1,43 +1,35 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class AgentRunner : MonoBehaviour // WoodokuGameManager の人間入力を agent コルーチンに差し替えた版
 {
-    [SerializeField]
-    private float stepDelay = 0.3f;
+    private IWoodokuAgent agent;
 
-    [SerializeField]
-    private GameSetting gameSetting;
+    [SerializeField] private BoardUI boardUI;
 
-    [SerializeField]
-    private BoardUI boardUI;
+    [SerializeField] private GameOverUI gameOverUI;
 
-    [SerializeField]
-    private HandUI handUI;
+    [SerializeField] private GameSetting gameSetting;
 
-    [SerializeField]
-    private GameOverUI gameOverUI;
+    [SerializeField] private HandUI handUI;
 
-    [SerializeField]
-    private ScoreUI scoreUI;
+    [SerializeField] private ScoreUI scoreUI;
 
-    [SerializeField]
-    private int seed = 0;
+    [SerializeField] private int seed;
 
     private GameSession session;
-    private IWoodokuAgent agent;
 
     private List<BlockShape> shapes;
 
-    void Start()
+    [SerializeField] private float stepDelay = 0.3f;
+
+    private void Start()
     {
         shapes = Resources.LoadAll<BlockData>("").Select(b => b.ToShape()).ToList();
 
-        session = new(gameSetting.GridSize, shapes, 3, seed: 0);
+        session = new GameSession(gameSetting.GridSize, shapes, 3, 0);
         boardUI.Initialize(session.Board);
         handUI.Initialize(NoOpDrop, boardUI.CellSize, session.Hands); // 人間入力は殺す
 
@@ -60,7 +52,10 @@ public class AgentRunner : MonoBehaviour // WoodokuGameManager の人間入力�
         yield return StartCoroutine(Run());
     }
 
-    private static bool NoOpDrop(PointerEventData e, int slot) => false;
+    private static bool NoOpDrop(Vector2 v, int slot)
+    {
+        return false;
+    }
 
     private IEnumerator Run()
     {

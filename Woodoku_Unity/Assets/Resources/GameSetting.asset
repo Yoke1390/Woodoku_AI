@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 469fe65784b13442894a0d2928375f73, type: 3}
   m_Name: GameSetting
   m_EditorClassIdentifier: 
+  <GridSize>k__BackingField: 3
+  <BlockControlMode>k__BackingField: 1

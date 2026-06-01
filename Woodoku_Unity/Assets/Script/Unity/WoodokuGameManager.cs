@@ -1,30 +1,25 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class WoodokuGameManager : MonoBehaviour
 {
-    [SerializeField]
-    private BoardUI boardUI;
+    public const int NHandSlots = 3;
 
-    [SerializeField]
-    private HandUI handUI;
+    private Camera _uiCamera;
 
-    [SerializeField]
-    private GameSetting gameSetting;
+    [SerializeField] private BoardUI boardUI;
 
-    [SerializeField]
-    private GameOverUI gameOverUI;
-
-    [SerializeField]
-    private ScoreUI scoreUI;
+    [SerializeField] private GameOverUI gameOverUI;
 
     private GameSession gameSession;
 
-    public const int NHandSlots = 3;
+    [SerializeField] private GameSetting gameSetting;
 
-    void Start()
+    [SerializeField] private HandUI handUI;
+
+    [SerializeField] private ScoreUI scoreUI;
+
+    private void Start()
     {
         Initialize();
         gameSession.Begin();
@@ -32,18 +27,25 @@ public class WoodokuGameManager : MonoBehaviour
 
     private void Initialize()
     {
-        BlockData[] blockDatas = Resources.LoadAll<BlockData>("");
+        _uiCamera = boardUI.GetComponentInParent<Canvas>().rootCanvas.worldCamera;
+
+        var blockDatas = Resources.LoadAll<BlockData>("");
         List<BlockShape> blockShapes = new();
-        foreach (BlockData data in blockDatas)
+        foreach (var data in blockDatas)
         {
-            BlockShape shape = data.ToShape();
+            var shape = data.ToShape();
             blockShapes.Add(shape);
         }
 
-        gameSession = new(gameSetting.GridSize, blockShapes, NHandSlots);
+        gameSession = new GameSession(gameSetting.GridSize, blockShapes, NHandSlots);
 
         boardUI.Initialize(gameSession.Board);
-        handUI.Initialize(HandleDropRequest, boardUI.CellSize, gameSession.Hands);
+        handUI.Initialize(
+            HandleEndBlockMoveRequest,
+            boardUI.CellSize,
+            gameSession.Hands,
+            gameSetting.BlockControlMode
+        );
 
         gameSession.Score.ScoreUpdate += scoreUI.UpdateScore;
         gameSession.GameOver += OnGameOver;
@@ -61,26 +63,24 @@ public class WoodokuGameManager : MonoBehaviour
         gameOverUI.Show();
     }
 
-    private bool HandleDropRequest(PointerEventData eventData, int slotIndex)
+    private bool HandleEndBlockMoveRequest(Vector2 screenPoint, int slotIndex)
     {
-        BlockShape? blockShape = gameSession.Hands.CurrentHand[slotIndex];
+        var blockShape = gameSession.Hands.CurrentHand[slotIndex];
 
-        if (blockShape is not BlockShape shape)
-        {
-            return false;
-        }
+        if (blockShape is not BlockShape shape) return false;
         if (
             boardUI.TryScreenPointToBoardPosition(
-                eventData.position,
-                eventData.pressEventCamera,
+                screenPoint,
+                _uiCamera,
                 shape.Center(),
-                out BoardPosition blockBaseBoardPosition
+                out var blockBaseBoardPosition
             )
         )
         {
-            PlacementResult result = gameSession.TryPlaceBlock(slotIndex, blockBaseBoardPosition);
+            var result = gameSession.TryPlaceBlock(slotIndex, blockBaseBoardPosition);
             return result.IsSuccess;
         }
+
         return false;
     }
 }

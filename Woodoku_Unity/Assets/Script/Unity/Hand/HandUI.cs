@@ -1,26 +1,28 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class HandUI : MonoBehaviour
 {
-    [SerializeField]
-    private RectTransform[] handSlots;
-
-    [SerializeField]
-    private HandBlock handBlockPrefab;
+    [SerializeField] private HandBlock handBlockPrefab;
+    [SerializeField] private RectTransform[] handSlots;
+    private float _cellSize;
+    private BlockControlMode _controlMode;
+    private EndBlockMoveHandler _endBlockMoveHandler;
 
     private HandBlock[] _handBlocks;
 
     private IReadOnlyHands _hands;
-    private DropHandler _dropHandler;
-    private float _cellSize;
 
-    public void Initialize(DropHandler dropHandler, float cellSize, IReadOnlyHands hands)
+    public void Initialize(
+        EndBlockMoveHandler endBlockMoveHandler,
+        float cellSize,
+        IReadOnlyHands hands,
+        BlockControlMode controlMode = BlockControlMode.Drag
+    )
     {
-        _dropHandler = dropHandler;
+        _endBlockMoveHandler = endBlockMoveHandler;
         _cellSize = cellSize;
         _hands = hands;
+        _controlMode = controlMode;
 
         _handBlocks = new HandBlock[hands.NSlots];
 
@@ -35,11 +37,11 @@ public class HandUI : MonoBehaviour
 
     private void GenerateHandBlock(int slotIndex, BlockShape blockShape)
     {
-        HandBlock newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
+        var newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
         newHandBlock.Initialize(blockShape, _cellSize);
         _handBlocks[slotIndex] = newHandBlock;
 
-        var draggableBlock = newHandBlock.GetComponent<DraggableBlock>();
-        draggableBlock.Initialize(slotIndex, _dropHandler);
+        newHandBlock.GetComponent<BlockManipulator>().Initialize(slotIndex, _endBlockMoveHandler);
+        newHandBlock.gameObject.AddComponent(GameSetting.GetBlockControlInputType(_controlMode));
     }
 }

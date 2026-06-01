@@ -2,22 +2,24 @@ using UnityEngine;
 
 public class HandBlock : MonoBehaviour
 {
-    [SerializeField]
-    private BlockPiece blockPiecePrefab;
+    private const int BackgroundSize = 3;
 
-    [SerializeField]
-    private Transform blockPiecesParent;
+    private BlockPiece[] _blockPieces;
+    private float _cellSize;
+    [SerializeField] private BlockPiece blockPiecePrefab;
 
-    [SerializeField]
-    private float inSlotCellSizeScale = 0.5f;
-    private BlockPiece[] blockPieces;
+    [SerializeField] private Transform blockPiecesParent;
+
+    [SerializeField] private RectTransform clickTargetBackground;
+
+    [SerializeField] private readonly float inSlotCellSizeScale = 0.5f;
 
     public BlockShape BlockShape { get; private set; }
 
     public void Initialize(BlockShape blockShape, float cellSize)
     {
         BlockShape = blockShape;
-        blockPieces = new BlockPiece[blockShape.NBlocks];
+        _blockPieces = new BlockPiece[blockShape.NBlocks];
 
         if (cellSize <= 0)
         {
@@ -25,29 +27,32 @@ public class HandBlock : MonoBehaviour
             cellSize = 1f;
         }
 
-        for (int i = 0; i < blockShape.NBlocks; i++)
+        _cellSize = cellSize;
+
+        for (var i = 0; i < blockShape.NBlocks; i++)
         {
-            BlockOffset blockOffset = blockShape.Blocks[i];
-            BlockPiece newBlockPiece = Instantiate(blockPiecePrefab, blockPiecesParent);
-            RectTransform newBlockPieceRectTransform = newBlockPiece.GetComponent<RectTransform>();
+            var blockOffset = blockShape.Blocks[i];
+            var newBlockPiece = Instantiate(blockPiecePrefab, blockPiecesParent);
+            var newBlockPieceRectTransform = newBlockPiece.GetComponent<RectTransform>();
 
             newBlockPieceRectTransform.anchoredPosition =
-                (blockOffset.ToVector2() - blockShape.Center()) * cellSize;
-            newBlockPieceRectTransform.sizeDelta = Vector2.one * cellSize;
+                (blockOffset.ToVector2() - blockShape.Center()) * _cellSize;
+            newBlockPieceRectTransform.sizeDelta = Vector2.one * _cellSize;
 
-            blockPieces[i] = newBlockPiece;
+            _blockPieces[i] = newBlockPiece;
         }
 
-        blockPiecesParent.localScale = inSlotCellSizeScale * Vector3.one;
-    }
-
-    public void SetScale(float scale)
-    {
-        blockPiecesParent.localScale = scale * Vector3.one;
+        ResetScale();
     }
 
     public void ResetScale()
     {
-        blockPiecesParent.localScale = inSlotCellSizeScale * Vector3.one;
+        SetScale(inSlotCellSizeScale);
+    }
+
+    public void SetScale(float scale)
+    {
+        clickTargetBackground.sizeDelta = scale * _cellSize * BackgroundSize * Vector2.one;
+        blockPiecesParent.localScale = scale * Vector3.one;
     }
 }
