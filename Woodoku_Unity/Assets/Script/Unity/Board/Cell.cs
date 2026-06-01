@@ -15,6 +15,8 @@ public class Cell : MonoBehaviour
     [SerializeField]
     private Image borderTop;
 
+    private float borderThickenMultiplier = 2f;
+
     public void Show()
     {
         filledOverlay.enabled = true;
@@ -40,12 +42,18 @@ public class Cell : MonoBehaviour
     {
         borderRight.color = highlightBorderColor;
         borderRight.transform.SetAsLastSibling();
+
+        Vector2 borderSizeMultiplier = new(borderThickenMultiplier, 1);
+        borderRight.rectTransform.sizeDelta *= borderSizeMultiplier;
     }
 
     public void HighlightTopBorder(Color highlightBorderColor)
     {
         borderTop.color = highlightBorderColor;
         borderTop.transform.SetAsLastSibling();
+
+        Vector2 borderSizeMultiplier = new(1, borderThickenMultiplier);
+        borderTop.rectTransform.sizeDelta *= borderSizeMultiplier;
     }
 
     public void HideRightBorder()
