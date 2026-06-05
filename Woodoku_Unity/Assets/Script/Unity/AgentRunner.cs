@@ -36,7 +36,7 @@ namespace Script.Unity
             _shapes = Resources.LoadAll<BlockData>("").Select(b => b.ToShape()).ToList();
 
             _session = new GameSession(gameSetting.GridSize, _shapes, 3, 0);
-            boardUI.Initialize(_session.Board);
+            boardUI.Initialize(_session.Board, _session.BoardEvent);
             handUI.Initialize(NoOpDrop, boardUI.CellSize, _session.Hands); // 人間入力は殺す
 
             _session.Score.ScoreUpdate += scoreUI.UpdateScore;

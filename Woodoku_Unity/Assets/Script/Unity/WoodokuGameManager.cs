@@ -45,7 +45,7 @@ namespace Script.Unity
 
             _gameSession = new GameSession(gameSetting.GridSize, blockShapes, NHandSlots);
 
-            boardUI.Initialize(_gameSession.Board);
+            boardUI.Initialize(_gameSession.Board, _gameSession.BoardEvent);
             handUI.Initialize(
                 HandleEndBlockMoveRequest,
                 boardUI.CellSize,

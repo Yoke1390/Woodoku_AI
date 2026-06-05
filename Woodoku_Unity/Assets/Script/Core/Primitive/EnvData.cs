@@ -1,3 +1,5 @@
+using Script.Core.Interfaces;
+
 namespace Script.Core.Primitive
 {
     public readonly struct StepResult

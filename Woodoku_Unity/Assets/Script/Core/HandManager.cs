@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Script.Core.Interfaces;
 using Script.Core.Primitive;
 
 namespace Script.Core

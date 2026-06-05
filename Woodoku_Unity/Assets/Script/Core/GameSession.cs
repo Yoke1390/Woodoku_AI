@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Script.Core.Interfaces;
 using Script.Core.Primitive;
 
 namespace Script.Core
@@ -34,6 +35,7 @@ namespace Script.Core
 
         public GameState State { get; private set; }
         public IReadOnlyBoard Board => _boardData;
+        public IBoardEventPublisher BoardEvent => _boardData;
         public IReadOnlyHands Hands => _handManager;
         public IReadOnlyScore Score => _scoreManager;
         public event Action GameOver;

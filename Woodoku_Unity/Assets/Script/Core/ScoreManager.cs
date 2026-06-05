@@ -1,4 +1,5 @@
 using System;
+using Script.Core.Interfaces;
 using Script.Core.Primitive;
 
 namespace Script.Core

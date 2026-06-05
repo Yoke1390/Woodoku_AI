@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Script.Core.Interfaces;
 using Script.Core.Primitive;
 
 namespace Script.Core
 {
-    public class BoardData : IReadOnlyBoard
+    public class BoardData : IReadOnlyBoard, IBoardEventPublisher
     {
         private readonly CellState[,] _board;
 
@@ -17,17 +18,20 @@ namespace Script.Core
             _board = new CellState[BoardSize, BoardSize];
         }
 
+        public event EventHandler<CellUpdateData> CellUpdate;
+
         public int GridSize { get; }
         public int BoardSize { get; }
         public int NGrids { get; }
 
-        public event EventHandler<CellUpdateData> CellUpdate;
-
         public CellState GetCell(BoardPosition boardPosition)
         {
-            if (IsInBoard(boardPosition)) return _board[boardPosition.x, boardPosition.y];
+            return this.IsInBoard(boardPosition) ? _board[boardPosition.x, boardPosition.y] : CellState.OutOfBoard;
+        }
 
-            return CellState.OutOfBoard;
+        public CellState GetCell(int x, int y)
+        {
+            return GetCell(new BoardPosition(x, y));
         }
 
         public IEnumerable<PlacementAction> EnumerateLegalActions(BlockShape blockShape)
@@ -53,16 +57,11 @@ namespace Script.Core
                 SetCell(x, y, CellState.Empty);
         }
 
-        public CellState GetCell(int x, int y)
-        {
-            return GetCell(new BoardPosition(x, y));
-        }
-
         public void SetCell(BoardPosition boardPosition, CellState state = CellState.Filled)
         {
             var x = boardPosition.x;
             var y = boardPosition.y;
-            if (IsInBoard(boardPosition))
+            if (this.IsInBoard(boardPosition))
             {
                 if (_board[x, y] == state)
                     return;
@@ -212,18 +211,6 @@ namespace Script.Core
             return cellsToBeCleared;
         }
 
-        private bool IsInBoard(BoardPosition boardPosition)
-        {
-            return IsInBoard(boardPosition, BoardSize);
-        }
-
-        internal static bool IsInBoard(BoardPosition boardPosition, int boardSize)
-        {
-            var x = boardPosition.x;
-            var y = boardPosition.y;
-            return 0 <= x && x < boardSize && 0 <= y && y < boardSize;
-        }
-
         public bool TryOffset(
             BoardPosition boardPosition,
             BlockOffset blockOffset,
@@ -233,7 +220,7 @@ namespace Script.Core
             var x = boardPosition.x + blockOffset.x;
             var y = boardPosition.y + blockOffset.y;
             newBoardPosition = new BoardPosition(x, y);
-            if (IsInBoard(newBoardPosition)) return true;
+            if (this.IsInBoard(newBoardPosition)) return true;
 
             newBoardPosition = default;
             return false;

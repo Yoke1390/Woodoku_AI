@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Script.Core;
+using Script.Core.Interfaces;
 using Script.Core.Primitive;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,10 +28,10 @@ namespace Script.Unity.Board
         private RectTransform _rectTransform;
         public float CellSize { get; private set; }
 
-        public void Initialize(IReadOnlyBoard boardData)
+        public void Initialize(IReadOnlyBoard boardData, IBoardEventPublisher boardEvent)
         {
             _boardData = boardData;
-            boardData.CellUpdate += BoardData_OnCellUpdate;
+            boardEvent.CellUpdate += BoardData_OnCellUpdate;
 
             _rectTransform = GetComponent<RectTransform>();
             _rectTransform.pivot = Vector2.zero;

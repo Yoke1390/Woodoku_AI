@@ -1,6 +1,8 @@
+using Script.Core.Interfaces;
+
 namespace Script.Core.Primitive
 {
-    public readonly struct BoardSnapShot
+    public readonly struct BoardSnapShot : IReadOnlyBoard
     {
         public int GridSize { get; }
         public int BoardSize { get; }
@@ -10,9 +12,9 @@ namespace Script.Core.Primitive
 
         public CellState GetCell(BoardPosition boardPosition)
         {
-            if (BoardData.IsInBoard(boardPosition, BoardSize)) return _board[boardPosition.x, boardPosition.y];
-
-            return CellState.OutOfBoard;
+            return this.IsInBoard(boardPosition)
+                ? _board[boardPosition.x, boardPosition.y]
+                : CellState.OutOfBoard;
         }
 
         public BoardSnapShot(int gridSize, CellState[,] board)
