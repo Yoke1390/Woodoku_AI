@@ -64,12 +64,12 @@ namespace Script.Core
 
         public IEnumerable<AgentAction> GetLegalActions()
         {
-            for (var slot = 0; slot < Hands.CurrentHand.Count; slot++)
+            for (int slot = 0; slot < Hands.CurrentHand.Count; slot++)
             {
-                var shape = Hands.CurrentHand[slot];
+                BlockShape? shape = Hands.CurrentHand[slot];
                 if (!shape.HasValue)
                     continue;
-                foreach (var p in _boardData.EnumerateLegalActions(shape.Value))
+                foreach (PlacementAction p in _boardData.EnumerateLegalActions(shape.Value))
                     yield return new AgentAction(slot, p.BasePosition);
             }
         }
@@ -82,13 +82,13 @@ namespace Script.Core
             if (slotIndex < 0 || slotIndex >= _handManager.CurrentHand.Count)
                 return PlacementResult.Failure();
 
-            var blockShape = _handManager.CurrentHand[slotIndex];
+            BlockShape? blockShape = _handManager.CurrentHand[slotIndex];
 
             if (!blockShape.HasValue)
                 return PlacementResult.Failure();
 
             PlacementAction action = new(blockBaseBoardPosition, blockShape.Value);
-            var result = _boardData.TryPlaceBlock(action);
+            PlacementResult result = _boardData.TryPlaceBlock(action);
 
             if (result.IsSuccess)
             {

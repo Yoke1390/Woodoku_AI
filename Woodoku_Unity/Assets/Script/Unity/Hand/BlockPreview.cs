@@ -21,7 +21,7 @@ namespace Script.Unity.Hand
         {
             ClearAllBlocks();
             _blockDatas = Resources.LoadAll<BlockData>("");
-            foreach (var blockData in _blockDatas) ShowHandBlock(blockData);
+            foreach (BlockData blockData in _blockDatas) ShowHandBlock(blockData);
         }
 
         private void ClearAllBlocks()
@@ -36,7 +36,7 @@ namespace Script.Unity.Hand
             slotRectTransform.SetParent(transform, false);
             slotRectTransform.sizeDelta = new Vector2(slotSize, slotSize);
 
-            var newHandBlock = Instantiate(handBlockPrefab, slotRectTransform);
+            HandBlock newHandBlock = Instantiate(handBlockPrefab, slotRectTransform);
             newHandBlock.Initialize(blockData.ToShape(), cellSize);
         }
     }

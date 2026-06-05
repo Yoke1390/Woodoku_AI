@@ -37,22 +37,22 @@ namespace Script.Unity.Hand
             if (blockCells == null || blockCells.Length == 0)
                 return;
 
-            var minX = blockCells.Min(cell => cell.x);
+            int minX = blockCells.Min(cell => cell.x);
             if (minX != 0)
                 Offset(-minX, 0);
 
-            var minY = blockCells.Min(cell => cell.y);
+            int minY = blockCells.Min(cell => cell.y);
             if (minY != 0)
                 Offset(0, -minY);
         }
 
         private void Offset(int offsetX, int offsetY)
         {
-            for (var i = 0; i < NBlocks; i++)
+            for (int i = 0; i < NBlocks; i++)
             {
-                var vec = blockCells[i];
-                var newX = vec.x + offsetX;
-                var newY = vec.y + offsetY;
+                Vector2Int vec = blockCells[i];
+                int newX = vec.x + offsetX;
+                int newY = vec.y + offsetY;
                 blockCells[i] = new Vector2Int(newX, newY);
             }
         }
@@ -66,7 +66,7 @@ namespace Script.Unity.Hand
             }
 
             BlockCells = new BlockOffset[NBlocks];
-            for (var i = 0; i < NBlocks; i++) BlockCells[i] = blockCells[i].ToBlockOffset();
+            for (int i = 0; i < NBlocks; i++) BlockCells[i] = blockCells[i].ToBlockOffset();
         }
     }
 }

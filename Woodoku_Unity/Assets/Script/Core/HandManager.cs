@@ -56,9 +56,9 @@ namespace Script.Core
 
         private void GenerateAll()
         {
-            for (var i = 0; i < NSlots; i++)
+            for (int i = 0; i < NSlots; i++)
             {
-                var blockShape = GetRandomBlockShape();
+                BlockShape blockShape = GetRandomBlockShape();
                 _currentHand[i] = blockShape;
                 HandBlockGenerated?.Invoke(i, blockShape);
             }
@@ -66,7 +66,7 @@ namespace Script.Core
 
         private void ConsumeAllHand()
         {
-            for (var i = 0; i < NSlots; i++)
+            for (int i = 0; i < NSlots; i++)
                 if (_currentHand[i].HasValue)
                 {
                     _currentHand[i] = null;

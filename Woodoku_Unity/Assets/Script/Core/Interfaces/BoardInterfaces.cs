@@ -10,6 +10,7 @@ namespace Script.Core.Interfaces
         int NGrids { get; }
 
         CellState GetCell(BoardPosition boardPosition);
+        CellState GetCell(int x, int y);
     }
 
     public interface IBoardEventPublisher

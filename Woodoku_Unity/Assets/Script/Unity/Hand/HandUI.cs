@@ -42,7 +42,7 @@ namespace Script.Unity.Hand
 
         private void GenerateHandBlock(int slotIndex, BlockShape blockShape)
         {
-            var newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
+            HandBlock newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
             newHandBlock.Initialize(blockShape, _cellSize);
             _handBlocks[slotIndex] = newHandBlock;
 

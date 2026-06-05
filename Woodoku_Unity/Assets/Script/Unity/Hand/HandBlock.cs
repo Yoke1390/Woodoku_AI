@@ -32,11 +32,11 @@ namespace Script.Unity.Hand
 
             _cellSize = cellSize;
 
-            for (var i = 0; i < blockShape.NBlocks; i++)
+            for (int i = 0; i < blockShape.NBlocks; i++)
             {
-                var blockOffset = blockShape.Blocks[i];
-                var newBlockPiece = Instantiate(blockPiecePrefab, blockPiecesParent);
-                var newBlockPieceRectTransform = newBlockPiece.GetComponent<RectTransform>();
+                BlockOffset blockOffset = blockShape.Blocks[i];
+                BlockPiece newBlockPiece = Instantiate(blockPiecePrefab, blockPiecesParent);
+                RectTransform newBlockPieceRectTransform = newBlockPiece.GetComponent<RectTransform>();
 
                 newBlockPieceRectTransform.anchoredPosition =
                     (blockOffset.ToVector2() - blockShape.Center()) * _cellSize;

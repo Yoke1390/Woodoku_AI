@@ -35,11 +35,11 @@ namespace Script.Unity
         {
             _uiCamera = boardUI.GetComponentInParent<Canvas>().rootCanvas.worldCamera;
 
-            var blockDatas = Resources.LoadAll<BlockData>("");
+            BlockData[] blockDatas = Resources.LoadAll<BlockData>("");
             List<BlockShape> blockShapes = new();
-            foreach (var data in blockDatas)
+            foreach (BlockData data in blockDatas)
             {
-                var shape = data.ToShape();
+                BlockShape shape = data.ToShape();
                 blockShapes.Add(shape);
             }
 
@@ -71,7 +71,7 @@ namespace Script.Unity
 
         private bool HandleEndBlockMoveRequest(Vector2 screenPoint, int slotIndex)
         {
-            var blockShape = _gameSession.Hands.CurrentHand[slotIndex];
+            BlockShape? blockShape = _gameSession.Hands.CurrentHand[slotIndex];
 
             if (!blockShape.HasValue) return false;
 
@@ -79,9 +79,9 @@ namespace Script.Unity
                     screenPoint,
                     _uiCamera,
                     blockShape.Value.Center(),
-                    out var blockBaseBoardPosition
+                    out BoardPosition blockBaseBoardPosition
                 )) return false;
-            var result = _gameSession.TryPlaceBlock(slotIndex, blockBaseBoardPosition);
+            PlacementResult result = _gameSession.TryPlaceBlock(slotIndex, blockBaseBoardPosition);
             return result.IsSuccess;
         }
     }

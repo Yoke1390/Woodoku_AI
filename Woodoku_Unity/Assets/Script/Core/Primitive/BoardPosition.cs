@@ -10,8 +10,8 @@ namespace Script.Core.Primitive
         // without validation
         public static BoardPosition operator +(BoardPosition boardPosition, BlockOffset blockOffset)
         {
-            var x = boardPosition.x + blockOffset.x;
-            var y = boardPosition.y + blockOffset.y;
+            int x = boardPosition.x + blockOffset.x;
+            int y = boardPosition.y + blockOffset.y;
             return new BoardPosition(x, y);
         }
 

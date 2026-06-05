@@ -27,12 +27,12 @@ namespace Script.Core
 
         public StepResult Step(AgentAction a)
         {
-            var oldScore = _session.Score.Score;
-            var result = _session.TryPlaceBlock(a);
-            var newScore = _session.Score.Score;
+            int oldScore = _session.Score.Score;
+            PlacementResult result = _session.TryPlaceBlock(a);
+            int newScore = _session.Score.Score;
 
-            var reward = newScore - oldScore;
-            var done = _session.State == GameState.GameOver;
+            int reward = newScore - oldScore;
+            bool done = _session.State == GameState.GameOver;
             return new StepResult(GetObservation(), reward, done);
         }
     }

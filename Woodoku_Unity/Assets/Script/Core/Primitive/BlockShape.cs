@@ -19,8 +19,8 @@ namespace Script.Core.Primitive
 
             if (_blocks.Count == 0) throw new ArgumentException("Number of blocks must be positive.", nameof(_blocks));
 
-            var maxX = _blocks.Max(b => b.x);
-            var maxY = _blocks.Max(b => b.y);
+            int maxX = _blocks.Max(b => b.x);
+            int maxY = _blocks.Max(b => b.y);
 
             MaxX = maxX;
             MaxY = maxY;

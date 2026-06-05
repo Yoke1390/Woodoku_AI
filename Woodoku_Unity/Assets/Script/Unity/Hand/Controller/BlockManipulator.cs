@@ -46,7 +46,7 @@ namespace Script.Unity.Hand.Controller
 
         public void EndMove()
         {
-            var success = _onEndBlockMoveRequested?.Invoke(Input.mousePosition, _slotIndex) ?? false;
+            bool success = _onEndBlockMoveRequested?.Invoke(Input.mousePosition, _slotIndex) ?? false;
             if (!success) ResetBlock();
         }
 
@@ -69,7 +69,7 @@ namespace Script.Unity.Hand.Controller
                     _parentRectTransform,
                     mousePosition,
                     _uiCamera,
-                    out var localPointerPosition
+                    out Vector2 localPointerPosition
                 ))
                 return localPointerPosition;
 

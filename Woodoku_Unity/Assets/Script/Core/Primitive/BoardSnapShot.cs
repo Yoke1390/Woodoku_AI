@@ -17,6 +17,11 @@ namespace Script.Core.Primitive
                 : CellState.OutOfBoard;
         }
 
+        public CellState GetCell(int x, int y)
+        {
+            return GetCell(new BoardPosition(x, y));
+        }
+
         public BoardSnapShot(int gridSize, CellState[,] board)
         {
             GridSize = gridSize;

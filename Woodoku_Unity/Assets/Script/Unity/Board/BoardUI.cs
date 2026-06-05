@@ -52,10 +52,10 @@ namespace Script.Unity.Board
 
         private void InitializeCells()
         {
-            var totalCellNumber = _boardData.BoardSize * _boardData.BoardSize;
-            for (var i = 0; i < totalCellNumber; i++)
+            int totalCellNumber = _boardData.BoardSize * _boardData.BoardSize;
+            for (int i = 0; i < totalCellNumber; i++)
             {
-                var newCell = Instantiate(cellPrefab, gameObject.transform);
+                Cell newCell = Instantiate(cellPrefab, gameObject.transform);
                 SetCellColor(i, newCell);
                 newCell.Hide();
                 _cellList.Add(newCell);
@@ -64,10 +64,10 @@ namespace Script.Unity.Board
 
         private void SetCellColor(int index, Cell cell)
         {
-            var x = index % _boardData.BoardSize;
-            var y = index / _boardData.BoardSize;
+            int x = index % _boardData.BoardSize;
+            int y = index / _boardData.BoardSize;
 
-            var backgroundColor = GetBackgroundColor(x, y);
+            Color backgroundColor = GetBackgroundColor(x, y);
             cell.SetBackgroundColor(backgroundColor);
 
             cell.InitializeBorder(defaultBorderColor);
@@ -81,8 +81,8 @@ namespace Script.Unity.Board
 
         private Color GetBackgroundColor(int x, int y)
         {
-            var gridX = x / _boardData.GridSize;
-            var gridY = y / _boardData.GridSize;
+            int gridX = x / _boardData.GridSize;
+            int gridY = y / _boardData.GridSize;
 
             if ((gridX + gridY) % 2 == 0) return backgroundColor1;
 
@@ -99,7 +99,7 @@ namespace Script.Unity.Board
 
         public void UpdateCellState(int x, int y, bool isFilled)
         {
-            var index = y * _boardData.BoardSize + x;
+            int index = y * _boardData.BoardSize + x;
             if (isFilled)
                 _cellList[index].Show();
             else
@@ -108,7 +108,7 @@ namespace Script.Unity.Board
 
         internal void BoardData_OnCellUpdate(object sender, CellUpdateData data)
         {
-            var isFilled = data.State == CellState.Filled;
+            bool isFilled = data.State == CellState.Filled;
             UpdateCellState(data.X, data.Y, isFilled);
         }
 
@@ -119,20 +119,20 @@ namespace Script.Unity.Board
             out BoardPosition boardPosition
         )
         {
-            var localOffset = centerCellOffset * CellSize;
+            Vector2 localOffset = centerCellOffset * CellSize;
             if (
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     _rectTransform,
                     screenPoint,
                     cam,
-                    out var localPointerPosition
+                    out Vector2 localPointerPosition
                 )
             )
             {
-                var screenLocalPosition = localPointerPosition - localOffset;
+                Vector2 screenLocalPosition = localPointerPosition - localOffset;
 
-                var boardPositionX = Mathf.FloorToInt(screenLocalPosition.x / CellSize);
-                var boardPositionY = Mathf.FloorToInt(screenLocalPosition.y / CellSize);
+                int boardPositionX = Mathf.FloorToInt(screenLocalPosition.x / CellSize);
+                int boardPositionY = Mathf.FloorToInt(screenLocalPosition.y / CellSize);
 
                 boardPosition = new BoardPosition(boardPositionX, boardPositionY);
                 return true;

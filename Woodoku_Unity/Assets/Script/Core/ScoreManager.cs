@@ -25,7 +25,7 @@ namespace Script.Core
 
         public void ApplyPlacement(PlacementResult result)
         {
-            var diff = 0;
+            int diff = 0;
             diff += result.BlockShape.NBlocks;
 
             if (result.NClearedTimes > 0)

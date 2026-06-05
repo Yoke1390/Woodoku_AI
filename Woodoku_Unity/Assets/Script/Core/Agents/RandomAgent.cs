@@ -16,7 +16,7 @@ namespace Script.Core.Agents
 
         public AgentAction SelectAction(Observation obs, IEnumerable<AgentAction> legalActions)
         {
-            var actions = legalActions.ToArray();
+            AgentAction[] actions = legalActions.ToArray();
             return actions[_random.Next(actions.Length)];
         }
     }

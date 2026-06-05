@@ -67,11 +67,11 @@ namespace Script.Unity
         {
             while (_session.State == GameState.Playing)
             {
-                var legal = _session.GetLegalActions().ToList();
+                List<AgentAction> legal = _session.GetLegalActions().ToList();
                 if (legal.Count == 0)
                     break;
                 Observation observation = new(_session.Board, _session.Hands);
-                var a = _agent.SelectAction(observation, legal);
+                AgentAction a = _agent.SelectAction(observation, legal);
                 _session.TryPlaceBlock(a); // UI は3イベントで自動追従
                 yield return new WaitForSeconds(stepDelay);
             }
