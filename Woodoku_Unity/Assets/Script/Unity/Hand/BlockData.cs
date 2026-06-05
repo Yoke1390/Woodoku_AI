@@ -1,73 +1,72 @@
 using System;
 using System.Linq;
+using Script.Core.Primitive;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "ScriptableObject/BlockData")]
-public class BlockData : ScriptableObject
+namespace Script.Unity.Hand
 {
-    [SerializeField]
-    private Vector2Int[] blockCells;
-    public int N_Blocks => blockCells.Length;
-
-    private BlockOffset[] _cachedBlockCells;
-    public BlockOffset[] BlockCells => _cachedBlockCells;
-
-    public BlockShape ToShape()
+    [CreateAssetMenu(menuName = "ScriptableObject/BlockData")]
+    public class BlockData : ScriptableObject
     {
-        return new BlockShape(BlockCells);
-    }
+        [SerializeField] private Vector2Int[] blockCells;
 
-    private void OnEnable()
-    {
-        ResetCache();
-    }
+        public int NBlocks => blockCells.Length;
+        public BlockOffset[] BlockCells { get; private set; }
 
-    // インスペクターの値が変更されたら呼ばれる
-    private void OnValidate()
-    {
-        // x=0,y=0が起点になるようにオフセット
-        OffsetToZero();
-
-        ResetCache();
-    }
-
-    private void OffsetToZero()
-    {
-        if (blockCells == null || blockCells.Length == 0)
-            return;
-
-        int minX = blockCells.Min(cell => cell.x);
-        if (minX != 0)
-            Offset(-minX, 0);
-
-        int minY = blockCells.Min(cell => cell.y);
-        if (minY != 0)
-            Offset(0, -minY);
-    }
-
-    private void Offset(int offsetX, int offsetY)
-    {
-        for (int i = 0; i < N_Blocks; i++)
+        private void OnEnable()
         {
-            Vector2Int vec = blockCells[i];
-            int newX = vec.x + offsetX;
-            int newY = vec.y + offsetY;
-            blockCells[i] = new Vector2Int(newX, newY);
-        }
-    }
-
-    private void ResetCache()
-    {
-        if (blockCells == null || blockCells.Length == 0)
-        {
-            _cachedBlockCells = Array.Empty<BlockOffset>();
-            return;
+            ResetCache();
         }
 
-        _cachedBlockCells = new BlockOffset[N_Blocks];
-        for (int i = 0; i < N_Blocks; i++)
+        // インスペクターの値が変更されたら呼ばれる
+        private void OnValidate()
         {
-            _cachedBlockCells[i] = blockCells[i].ToBlockOffset();
+            // x=0,y=0が起点になるようにオフセット
+            OffsetToZero();
+
+            ResetCache();
+        }
+
+        public BlockShape ToShape()
+        {
+            return new BlockShape(BlockCells);
+        }
+
+        private void OffsetToZero()
+        {
+            if (blockCells == null || blockCells.Length == 0)
+                return;
+
+            var minX = blockCells.Min(cell => cell.x);
+            if (minX != 0)
+                Offset(-minX, 0);
+
+            var minY = blockCells.Min(cell => cell.y);
+            if (minY != 0)
+                Offset(0, -minY);
+        }
+
+        private void Offset(int offsetX, int offsetY)
+        {
+            for (var i = 0; i < NBlocks; i++)
+            {
+                var vec = blockCells[i];
+                var newX = vec.x + offsetX;
+                var newY = vec.y + offsetY;
+                blockCells[i] = new Vector2Int(newX, newY);
+            }
+        }
+
+        private void ResetCache()
+        {
+            if (blockCells == null || blockCells.Length == 0)
+            {
+                BlockCells = Array.Empty<BlockOffset>();
+                return;
+            }
+
+            BlockCells = new BlockOffset[NBlocks];
+            for (var i = 0; i < NBlocks; i++) BlockCells[i] = blockCells[i].ToBlockOffset();
         }
     }
 }

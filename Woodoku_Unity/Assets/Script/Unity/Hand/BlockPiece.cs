@@ -1,24 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class BlockPiece : MonoBehaviour
+namespace Script.Unity.Hand
 {
-    [SerializeField]
-    private GameObject sprite;
-
-    private void Awake()
+    public class BlockPiece : MonoBehaviour
     {
-        Show();
-    }
+        [SerializeField] private GameObject sprite;
 
-    public void Show()
-    {
-        sprite.SetActive(true);
-    }
+        private void Awake()
+        {
+            Show();
+        }
 
-    public void Hide()
-    {
-        sprite.SetActive(false);
+        public void Show()
+        {
+            sprite.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            sprite.SetActive(false);
+        }
     }
 }

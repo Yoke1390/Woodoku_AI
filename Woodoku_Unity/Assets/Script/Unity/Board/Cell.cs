@@ -1,68 +1,67 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Cell : MonoBehaviour
+namespace Script.Unity.Board
 {
-    [SerializeField]
-    private Image background;
-
-    [SerializeField]
-    private Image filledOverlay;
-
-    [SerializeField]
-    private Image borderRight;
-
-    [SerializeField]
-    private Image borderTop;
-
-    private float borderThickenMultiplier = 2f;
-
-    public void Show()
+    public class Cell : MonoBehaviour
     {
-        filledOverlay.enabled = true;
-    }
+        [SerializeField] private Image background;
 
-    public void Hide()
-    {
-        filledOverlay.enabled = false;
-    }
+        [SerializeField] private Image filledOverlay;
 
-    public void SetBackgroundColor(Color backgroundColor)
-    {
-        background.color = backgroundColor;
-    }
+        [SerializeField] private Image borderRight;
 
-    public void InitializeBorder(Color defaultBorderColor)
-    {
-        borderRight.color = defaultBorderColor;
-        borderTop.color = defaultBorderColor;
-    }
+        [SerializeField] private Image borderTop;
 
-    public void HighlightRightBorder(Color highlightBorderColor)
-    {
-        borderRight.color = highlightBorderColor;
-        borderRight.transform.SetAsLastSibling();
+        private readonly float _borderThickenMultiplier = 2f;
 
-        Vector2 borderSizeMultiplier = new(borderThickenMultiplier, 1);
-        borderRight.rectTransform.sizeDelta *= borderSizeMultiplier;
-    }
+        public void Show()
+        {
+            filledOverlay.enabled = true;
+        }
 
-    public void HighlightTopBorder(Color highlightBorderColor)
-    {
-        borderTop.color = highlightBorderColor;
-        borderTop.transform.SetAsLastSibling();
+        public void Hide()
+        {
+            filledOverlay.enabled = false;
+        }
 
-        Vector2 borderSizeMultiplier = new(1, borderThickenMultiplier);
-        borderTop.rectTransform.sizeDelta *= borderSizeMultiplier;
-    }
+        public void SetBackgroundColor(Color backgroundColor)
+        {
+            background.color = backgroundColor;
+        }
 
-    public void HideRightBorder()
-    {
-        borderRight.enabled = false;
-    }
+        public void InitializeBorder(Color defaultBorderColor)
+        {
+            borderRight.color = defaultBorderColor;
+            borderTop.color = defaultBorderColor;
+        }
 
-    public void HideTopBorder()
-    {
-        borderTop.enabled = false;
+        public void HighlightRightBorder(Color highlightBorderColor)
+        {
+            borderRight.color = highlightBorderColor;
+            borderRight.transform.SetAsLastSibling();
+
+            Vector2 borderSizeMultiplier = new(_borderThickenMultiplier, 1);
+            borderRight.rectTransform.sizeDelta *= borderSizeMultiplier;
+        }
+
+        public void HighlightTopBorder(Color highlightBorderColor)
+        {
+            borderTop.color = highlightBorderColor;
+            borderTop.transform.SetAsLastSibling();
+
+            Vector2 borderSizeMultiplier = new(1, _borderThickenMultiplier);
+            borderTop.rectTransform.sizeDelta *= borderSizeMultiplier;
+        }
+
+        public void HideRightBorder()
+        {
+            borderRight.enabled = false;
+        }
+
+        public void HideTopBorder()
+        {
+            borderTop.enabled = false;
+        }
     }
 }

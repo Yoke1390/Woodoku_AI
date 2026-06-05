@@ -1,86 +1,88 @@
 using System.Collections.Generic;
+using Script.Core;
+using Script.Core.Primitive;
+using Script.Unity.Board;
+using Script.Unity.Hand;
 using UnityEngine;
 
-public class WoodokuGameManager : MonoBehaviour
+namespace Script.Unity
 {
-    public const int NHandSlots = 3;
-
-    private Camera _uiCamera;
-
-    [SerializeField] private BoardUI boardUI;
-
-    [SerializeField] private GameOverUI gameOverUI;
-
-    private GameSession gameSession;
-
-    [SerializeField] private GameSetting gameSetting;
-
-    [SerializeField] private HandUI handUI;
-
-    [SerializeField] private ScoreUI scoreUI;
-
-    private void Start()
+    public class WoodokuGameManager : MonoBehaviour
     {
-        Initialize();
-        gameSession.Begin();
-    }
+        private const int NHandSlots = 3;
 
-    private void Initialize()
-    {
-        _uiCamera = boardUI.GetComponentInParent<Canvas>().rootCanvas.worldCamera;
+        [SerializeField] private BoardUI boardUI;
 
-        var blockDatas = Resources.LoadAll<BlockData>("");
-        List<BlockShape> blockShapes = new();
-        foreach (var data in blockDatas)
+        [SerializeField] private GameOverUI gameOverUI;
+
+        [SerializeField] private GameSetting gameSetting;
+
+        [SerializeField] private HandUI handUI;
+
+        [SerializeField] private ScoreUI scoreUI;
+
+        private GameSession _gameSession;
+
+        private Camera _uiCamera;
+
+        private void Start()
         {
-            var shape = data.ToShape();
-            blockShapes.Add(shape);
+            Initialize();
+            _gameSession.Begin();
         }
 
-        gameSession = new GameSession(gameSetting.GridSize, blockShapes, NHandSlots);
-
-        boardUI.Initialize(gameSession.Board);
-        handUI.Initialize(
-            HandleEndBlockMoveRequest,
-            boardUI.CellSize,
-            gameSession.Hands,
-            gameSetting.BlockControlMode
-        );
-
-        gameSession.Score.ScoreUpdate += scoreUI.UpdateScore;
-        gameSession.GameOver += OnGameOver;
-        gameOverUI.Restart += OnRestart;
-    }
-
-    private void OnRestart()
-    {
-        gameOverUI.Hide();
-        gameSession.Begin();
-    }
-
-    private void OnGameOver()
-    {
-        gameOverUI.Show();
-    }
-
-    private bool HandleEndBlockMoveRequest(Vector2 screenPoint, int slotIndex)
-    {
-        var blockShape = gameSession.Hands.CurrentHand[slotIndex];
-
-        if (blockShape is not BlockShape shape) return false;
-        if (
-            boardUI.TryScreenPointToBoardPosition(
-                screenPoint,
-                _uiCamera,
-                shape.Center(),
-                out var blockBaseBoardPosition
-            )
-        )
+        private void Initialize()
         {
-            var result = gameSession.TryPlaceBlock(slotIndex, blockBaseBoardPosition);
+            _uiCamera = boardUI.GetComponentInParent<Canvas>().rootCanvas.worldCamera;
+
+            var blockDatas = Resources.LoadAll<BlockData>("");
+            List<BlockShape> blockShapes = new();
+            foreach (var data in blockDatas)
+            {
+                var shape = data.ToShape();
+                blockShapes.Add(shape);
+            }
+
+            _gameSession = new GameSession(gameSetting.GridSize, blockShapes, NHandSlots);
+
+            boardUI.Initialize(_gameSession.Board);
+            handUI.Initialize(
+                HandleEndBlockMoveRequest,
+                boardUI.CellSize,
+                _gameSession.Hands,
+                gameSetting.BlockControlMode
+            );
+
+            _gameSession.Score.ScoreUpdate += scoreUI.UpdateScore;
+            _gameSession.GameOver += OnGameOver;
+            gameOverUI.Restart += OnRestart;
+        }
+
+        private void OnRestart()
+        {
+            gameOverUI.Hide();
+            _gameSession.Begin();
+        }
+
+        private void OnGameOver()
+        {
+            gameOverUI.Show();
+        }
+
+        private bool HandleEndBlockMoveRequest(Vector2 screenPoint, int slotIndex)
+        {
+            var blockShape = _gameSession.Hands.CurrentHand[slotIndex];
+
+            if (!blockShape.HasValue) return false;
+
+            if (!boardUI.TryScreenPointToBoardPosition(
+                    screenPoint,
+                    _uiCamera,
+                    blockShape.Value.Center(),
+                    out var blockBaseBoardPosition
+                )) return false;
+            var result = _gameSession.TryPlaceBlock(slotIndex, blockBaseBoardPosition);
             return result.IsSuccess;
         }
-
-        return false;
     }
 }

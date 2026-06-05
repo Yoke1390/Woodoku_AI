@@ -1,11 +1,14 @@
-public readonly struct PlacementAction
+namespace Script.Core.Primitive
 {
-    public BoardPosition BasePosition { get; }
-    public BlockShape Shape { get; }
-
-    public PlacementAction(BoardPosition basePosition, BlockShape shape)
+    public readonly struct PlacementAction
     {
-        BasePosition = basePosition;
-        Shape = shape;
+        public BoardPosition BasePosition { get; }
+        public BlockShape Shape { get; }
+
+        public PlacementAction(BoardPosition basePosition, BlockShape shape)
+        {
+            BasePosition = basePosition;
+            Shape = shape;
+        }
     }
 }

@@ -1,32 +1,35 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(BlockManipulator))]
-public class DragBlockControlInput : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
+namespace Script.Unity.Hand.Controller
 {
-    private BlockManipulator _blockManipulator;
-    private CanvasGroup _canvasGroup;
-
-    private void Start()
+    [RequireComponent(typeof(BlockManipulator))]
+    public class DragBlockControlInput : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
     {
-        _canvasGroup = GetComponent<CanvasGroup>();
-        _blockManipulator = GetComponent<BlockManipulator>();
-    }
+        private BlockManipulator _blockManipulator;
+        private CanvasGroup _canvasGroup;
 
-    public void OnBeginDrag(PointerEventData _)
-    {
-        _canvasGroup.blocksRaycasts = false;
-        _blockManipulator.BeginMove();
-    }
+        private void Start()
+        {
+            _canvasGroup = GetComponent<CanvasGroup>();
+            _blockManipulator = GetComponent<BlockManipulator>();
+        }
 
-    public void OnDrag(PointerEventData _)
-    {
-        // IDragHandler を実装しないと drag 系イベントが発火しない
-    }
+        public void OnBeginDrag(PointerEventData _)
+        {
+            _canvasGroup.blocksRaycasts = false;
+            _blockManipulator.BeginMove();
+        }
 
-    public void OnEndDrag(PointerEventData _)
-    {
-        _canvasGroup.blocksRaycasts = true;
-        _blockManipulator.EndMove();
+        public void OnDrag(PointerEventData _)
+        {
+            // IDragHandler を実装しないと drag 系イベントが発火しない
+        }
+
+        public void OnEndDrag(PointerEventData _)
+        {
+            _canvasGroup.blocksRaycasts = true;
+            _blockManipulator.EndMove();
+        }
     }
 }

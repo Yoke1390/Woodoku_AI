@@ -1,51 +1,43 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class BlockPreview : MonoBehaviour
+namespace Script.Unity.Hand
 {
-    [SerializeField]
-    private HandBlock handBlockPrefab;
-
-    [SerializeField]
-    private int cellSize = 10;
-
-    [SerializeField]
-    private int slotSize = 300;
-    private BlockData[] blockDatas;
-
-    private void Start()
+    public class BlockPreview : MonoBehaviour
     {
-        InvokeRepeating(nameof(ShowAllBlocks), 0f, 2f);
-    }
+        [SerializeField] private HandBlock handBlockPrefab;
 
-    private void ShowAllBlocks()
-    {
-        ClearAllBlocks();
-        blockDatas = Resources.LoadAll<BlockData>("");
-        foreach (BlockData blockData in blockDatas)
+        [SerializeField] private int cellSize = 10;
+
+        [SerializeField] private int slotSize = 300;
+
+        private BlockData[] _blockDatas;
+
+        private void Start()
         {
-            ShowHandBlock(blockData);
+            InvokeRepeating(nameof(ShowAllBlocks), 0f, 2f);
         }
-    }
 
-    private void ClearAllBlocks()
-    {
-        foreach (Transform child in transform)
+        private void ShowAllBlocks()
         {
-            Destroy(child.gameObject);
+            ClearAllBlocks();
+            _blockDatas = Resources.LoadAll<BlockData>("");
+            foreach (var blockData in _blockDatas) ShowHandBlock(blockData);
         }
-    }
 
-    private void ShowHandBlock(BlockData blockData)
-    {
-        GameObject slot = new("Slot", typeof(RectTransform));
-        RectTransform slotRectTransform = slot.GetComponent<RectTransform>();
-        slotRectTransform.SetParent(transform, false);
-        slotRectTransform.sizeDelta = new Vector2(slotSize, slotSize);
+        private void ClearAllBlocks()
+        {
+            foreach (Transform child in transform) Destroy(child.gameObject);
+        }
 
-        HandBlock newHandBlock = Instantiate(handBlockPrefab, slotRectTransform);
-        newHandBlock.Initialize(blockData.ToShape(), cellSize);
+        private void ShowHandBlock(BlockData blockData)
+        {
+            GameObject slot = new("Slot", typeof(RectTransform));
+            var slotRectTransform = slot.GetComponent<RectTransform>();
+            slotRectTransform.SetParent(transform, false);
+            slotRectTransform.sizeDelta = new Vector2(slotSize, slotSize);
+
+            var newHandBlock = Instantiate(handBlockPrefab, slotRectTransform);
+            newHandBlock.Initialize(blockData.ToShape(), cellSize);
+        }
     }
 }

@@ -1,27 +1,31 @@
 using System;
+using Script.Unity.Hand.Controller;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "ScriptableObject/GameSetting")]
-public class GameSetting : ScriptableObject
+namespace Script.Unity
 {
-    [Tooltip("グリッド1つのサイズ。デフォルトは3で、ボード全体の大きさは3x3=9")]
-    [field: SerializeField]
-    public int GridSize { get; private set; } = 3;
-
-    [field: SerializeField] public BlockControlMode BlockControlMode { get; private set; } = BlockControlMode.Drag;
-
-    public static Type GetBlockControlInputType(BlockControlMode mode)
+    [CreateAssetMenu(menuName = "ScriptableObject/GameSetting")]
+    public class GameSetting : ScriptableObject
     {
-        return mode switch
-        {
-            BlockControlMode.Click => typeof(ClickBlockControlInput),
-            BlockControlMode.Drag or _ => typeof(DragBlockControlInput)
-        };
-    }
-}
+        [Tooltip("グリッド1つのサイズ。デフォルトは3で、ボード全体の大きさは3x3=9")]
+        [field: SerializeField]
+        public int GridSize { get; private set; } = 3;
 
-public enum BlockControlMode
-{
-    Drag,
-    Click
+        [field: SerializeField] public BlockControlMode BlockControlMode { get; private set; } = BlockControlMode.Drag;
+
+        public static Type GetBlockControlInputType(BlockControlMode mode)
+        {
+            return mode switch
+            {
+                BlockControlMode.Click => typeof(ClickBlockControlInput),
+                BlockControlMode.Drag or _ => typeof(DragBlockControlInput)
+            };
+        }
+    }
+
+    public enum BlockControlMode
+    {
+        Drag,
+        Click
+    }
 }

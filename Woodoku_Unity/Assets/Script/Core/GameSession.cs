@@ -1,99 +1,105 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Script.Core.Primitive;
 
-public enum GameState
+namespace Script.Core
 {
-    Playing,
-    GameOver,
-}
-
-public class GameSession
-{
-    private readonly BoardData boardData;
-    private readonly HandManager handManager;
-    private readonly ScoreManager scoreManager;
-
-    public GameState State { get; private set; }
-    public IReadOnlyBoard Board => boardData;
-    public IReadOnlyHands Hands => handManager;
-    public IReadOnlyScore Score => scoreManager;
-    public event Action GameOver;
-
-    private const int TestSeed = 1234;
-
-    public GameSession(
-        int gridSize,
-        IEnumerable<BlockShape> blockShapes,
-        int nHandSlots,
-        int seed = TestSeed
-    )
+    public enum GameState
     {
-        boardData = new(gridSize);
-        handManager = new(blockShapes, nHandSlots, seed);
-        scoreManager = new();
-
-        handManager.HandSettled += CheckForGameOver;
+        Playing,
+        GameOver
     }
 
-    public void Begin(int? seed = null)
+    public class GameSession
     {
-        boardData.Reset();
-        handManager.Reset(seed);
-        scoreManager.Reset();
-        State = GameState.Playing;
-    }
+        private const int TestSeed = 1234;
+        private readonly BoardData _boardData;
+        private readonly HandManager _handManager;
+        private readonly ScoreManager _scoreManager;
 
-    private void CheckForGameOver()
-    {
-        if (IsGameOver())
+        public GameSession(
+            int gridSize,
+            IEnumerable<BlockShape> blockShapes,
+            int nHandSlots,
+            int seed = TestSeed
+        )
         {
-            State = GameState.GameOver;
-            GameOver?.Invoke();
-        }
-    }
+            _boardData = new BoardData(gridSize);
+            _handManager = new HandManager(blockShapes, nHandSlots, seed);
+            _scoreManager = new ScoreManager();
 
-    private bool IsGameOver() => !GetLegalActions().Any();
-
-    public IEnumerable<AgentAction> GetLegalActions()
-    {
-        for (int slot = 0; slot < Hands.CurrentHand.Count; slot++)
-        {
-            BlockShape? shape = Hands.CurrentHand[slot];
-            if (!shape.HasValue)
-                continue;
-            foreach (PlacementAction p in boardData.EnumerateLegalActions(shape.Value))
-                yield return new AgentAction(slot, p.BasePosition);
-        }
-    }
-
-    public PlacementResult TryPlaceBlock(int slotIndex, BoardPosition blockBaseBoardPosition)
-    {
-        if (State == GameState.GameOver)
-            return PlacementResult.Failure();
-
-        if (slotIndex < 0 || slotIndex >= handManager.CurrentHand.Count)
-            return PlacementResult.Failure();
-
-        BlockShape? blockShape = handManager.CurrentHand[slotIndex];
-
-        if (!blockShape.HasValue)
-            return PlacementResult.Failure();
-
-        PlacementAction action = new(blockBaseBoardPosition, blockShape.Value);
-        PlacementResult result = boardData.TryPlaceBlock(action);
-
-        if (result.IsSuccess)
-        {
-            scoreManager.ApplyPlacement(result);
-            handManager.CommitPlacement(slotIndex);
+            _handManager.HandSettled += CheckForGameOver;
         }
 
-        return result;
-    }
+        public GameState State { get; private set; }
+        public IReadOnlyBoard Board => _boardData;
+        public IReadOnlyHands Hands => _handManager;
+        public IReadOnlyScore Score => _scoreManager;
+        public event Action GameOver;
 
-    public PlacementResult TryPlaceBlock(AgentAction a)
-    {
-        return TryPlaceBlock(a.SlotIndex, a.BasePosition);
+        public void Begin(int? seed = null)
+        {
+            _boardData.Reset();
+            _handManager.Reset(seed);
+            _scoreManager.Reset();
+            State = GameState.Playing;
+        }
+
+        private void CheckForGameOver()
+        {
+            if (IsGameOver())
+            {
+                State = GameState.GameOver;
+                GameOver?.Invoke();
+            }
+        }
+
+        private bool IsGameOver()
+        {
+            return !GetLegalActions().Any();
+        }
+
+        public IEnumerable<AgentAction> GetLegalActions()
+        {
+            for (var slot = 0; slot < Hands.CurrentHand.Count; slot++)
+            {
+                var shape = Hands.CurrentHand[slot];
+                if (!shape.HasValue)
+                    continue;
+                foreach (var p in _boardData.EnumerateLegalActions(shape.Value))
+                    yield return new AgentAction(slot, p.BasePosition);
+            }
+        }
+
+        public PlacementResult TryPlaceBlock(int slotIndex, BoardPosition blockBaseBoardPosition)
+        {
+            if (State == GameState.GameOver)
+                return PlacementResult.Failure();
+
+            if (slotIndex < 0 || slotIndex >= _handManager.CurrentHand.Count)
+                return PlacementResult.Failure();
+
+            var blockShape = _handManager.CurrentHand[slotIndex];
+
+            if (!blockShape.HasValue)
+                return PlacementResult.Failure();
+
+            PlacementAction action = new(blockBaseBoardPosition, blockShape.Value);
+            var result = _boardData.TryPlaceBlock(action);
+
+            if (result.IsSuccess)
+            {
+                _scoreManager.ApplyPlacement(result);
+                _handManager.CommitPlacement(slotIndex);
+            }
+
+            return result;
+        }
+
+        public PlacementResult TryPlaceBlock(AgentAction a)
+        {
+            return TryPlaceBlock(a.SlotIndex, a.BasePosition);
+        }
     }
 }

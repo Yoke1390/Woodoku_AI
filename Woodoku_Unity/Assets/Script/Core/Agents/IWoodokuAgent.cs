@@ -1,6 +1,10 @@
 using System.Collections.Generic;
+using Script.Core.Primitive;
 
-public interface IWoodokuAgent
+namespace Script.Core.Agents
 {
-    AgentAction SelectAction(Observation obs, IEnumerable<AgentAction> legalActions);
+    public interface IWoodokuAgent
+    {
+        AgentAction SelectAction(Observation obs, IEnumerable<AgentAction> legalActions);
+    }
 }

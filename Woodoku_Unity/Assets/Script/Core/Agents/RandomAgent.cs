@@ -1,19 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Script.Core.Primitive;
 
-public class RandomAgent : IWoodokuAgent
+namespace Script.Core.Agents
 {
-    private Random random;
-
-    public RandomAgent(int seed = 1234)
+    public class RandomAgent : IWoodokuAgent
     {
-        random = new(seed);
-    }
+        private readonly Random _random;
 
-    public AgentAction SelectAction(Observation obs, IEnumerable<AgentAction> legalActions)
-    {
-        AgentAction[] actions = legalActions.ToArray();
-        return actions[random.Next(actions.Length)];
+        public RandomAgent(int seed = 1234)
+        {
+            _random = new Random(seed);
+        }
+
+        public AgentAction SelectAction(Observation obs, IEnumerable<AgentAction> legalActions)
+        {
+            var actions = legalActions.ToArray();
+            return actions[_random.Next(actions.Length)];
+        }
     }
 }

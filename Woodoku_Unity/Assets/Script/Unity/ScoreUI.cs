@@ -1,15 +1,17 @@
 using TMPro;
 using UnityEngine;
 
-public class ScoreUI : MonoBehaviour
+namespace Script.Unity
 {
-    [SerializeField]
-    private TextMeshProUGUI scoreText;
-
-    private const string ScoreTextPrefix = "Score: ";
-
-    public void UpdateScore(int score)
+    public class ScoreUI : MonoBehaviour
     {
-        scoreText.SetText(ScoreTextPrefix + score);
+        private const string ScoreTextPrefix = "Score: ";
+
+        [SerializeField] private TextMeshProUGUI scoreText;
+
+        public void UpdateScore(int score)
+        {
+            scoreText.SetText(ScoreTextPrefix + score);
+        }
     }
 }

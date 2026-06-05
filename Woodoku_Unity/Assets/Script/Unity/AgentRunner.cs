@@ -1,73 +1,80 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Script.Core;
+using Script.Core.Agents;
+using Script.Core.Primitive;
+using Script.Unity.Board;
+using Script.Unity.Hand;
 using UnityEngine;
 
-public class AgentRunner : MonoBehaviour // WoodokuGameManager の人間入力を agent コルーチンに差し替えた版
+namespace Script.Unity
 {
-    private IWoodokuAgent agent;
-
-    [SerializeField] private BoardUI boardUI;
-
-    [SerializeField] private GameOverUI gameOverUI;
-
-    [SerializeField] private GameSetting gameSetting;
-
-    [SerializeField] private HandUI handUI;
-
-    [SerializeField] private ScoreUI scoreUI;
-
-    [SerializeField] private int seed;
-
-    private GameSession session;
-
-    private List<BlockShape> shapes;
-
-    [SerializeField] private float stepDelay = 0.3f;
-
-    private void Start()
+    public class AgentRunner : MonoBehaviour // WoodokuGameManager の人間入力を agent コルーチンに差し替えた版
     {
-        shapes = Resources.LoadAll<BlockData>("").Select(b => b.ToShape()).ToList();
+        [SerializeField] private BoardUI boardUI;
 
-        session = new GameSession(gameSetting.GridSize, shapes, 3, 0);
-        boardUI.Initialize(session.Board);
-        handUI.Initialize(NoOpDrop, boardUI.CellSize, session.Hands); // 人間入力は殺す
+        [SerializeField] private GameOverUI gameOverUI;
 
-        session.Score.ScoreUpdate += scoreUI.UpdateScore;
-        session.GameOver += () => gameOverUI.Show();
-        gameOverUI.Restart += OnRestart;
-        StartCoroutine(RunNewSession());
-    }
+        [SerializeField] private GameSetting gameSetting;
 
-    private void OnRestart()
-    {
-        StartCoroutine(RunNewSession());
-    }
+        [SerializeField] private HandUI handUI;
 
-    private IEnumerator RunNewSession()
-    {
-        agent = new RandomAgent();
+        [SerializeField] private ScoreUI scoreUI;
 
-        session.Begin(seed);
-        yield return StartCoroutine(Run());
-    }
+        [SerializeField] private int seed;
 
-    private static bool NoOpDrop(Vector2 v, int slot)
-    {
-        return false;
-    }
+        [SerializeField] private float stepDelay = 0.3f;
+        private IWoodokuAgent _agent;
 
-    private IEnumerator Run()
-    {
-        while (session.State == GameState.Playing)
+        private GameSession _session;
+
+        private List<BlockShape> _shapes;
+
+        private void Start()
         {
-            var legal = session.GetLegalActions().ToList();
-            if (legal.Count == 0)
-                break;
-            Observation observation = new(session.Board, session.Hands);
-            var a = agent.SelectAction(observation, legal);
-            session.TryPlaceBlock(a); // UI は3イベントで自動追従
-            yield return new WaitForSeconds(stepDelay);
+            _shapes = Resources.LoadAll<BlockData>("").Select(b => b.ToShape()).ToList();
+
+            _session = new GameSession(gameSetting.GridSize, _shapes, 3, 0);
+            boardUI.Initialize(_session.Board);
+            handUI.Initialize(NoOpDrop, boardUI.CellSize, _session.Hands); // 人間入力は殺す
+
+            _session.Score.ScoreUpdate += scoreUI.UpdateScore;
+            _session.GameOver += () => gameOverUI.Show();
+            gameOverUI.Restart += OnRestart;
+            StartCoroutine(RunNewSession());
+        }
+
+        private void OnRestart()
+        {
+            StartCoroutine(RunNewSession());
+        }
+
+        private IEnumerator RunNewSession()
+        {
+            _agent = new RandomAgent();
+
+            _session.Begin(seed);
+            yield return StartCoroutine(Run());
+        }
+
+        private static bool NoOpDrop(Vector2 v, int slot)
+        {
+            return false;
+        }
+
+        private IEnumerator Run()
+        {
+            while (_session.State == GameState.Playing)
+            {
+                var legal = _session.GetLegalActions().ToList();
+                if (legal.Count == 0)
+                    break;
+                Observation observation = new(_session.Board, _session.Hands);
+                var a = _agent.SelectAction(observation, legal);
+                _session.TryPlaceBlock(a); // UI は3イベントで自動追従
+                yield return new WaitForSeconds(stepDelay);
+            }
         }
     }
 }

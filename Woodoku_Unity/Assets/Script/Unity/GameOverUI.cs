@@ -1,37 +1,37 @@
 using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameOverUI : MonoBehaviour
+namespace Script.Unity
 {
-    [SerializeField]
-    private GameObject group;
-
-    [SerializeField]
-    private Button restartButton;
-
-    public event Action Restart;
-
-    private void Start()
+    public class GameOverUI : MonoBehaviour
     {
-        Hide();
-        restartButton.onClick.AddListener(OnRestart);
-    }
+        [SerializeField] private GameObject group;
 
-    private void OnRestart()
-    {
-        Hide();
-        Restart?.Invoke();
-    }
+        [SerializeField] private Button restartButton;
 
-    public void Hide()
-    {
-        group.SetActive(false);
-    }
+        private void Start()
+        {
+            Hide();
+            restartButton.onClick.AddListener(OnRestart);
+        }
 
-    public void Show()
-    {
-        group.SetActive(true);
+        public event Action Restart;
+
+        private void OnRestart()
+        {
+            Hide();
+            Restart?.Invoke();
+        }
+
+        public void Hide()
+        {
+            group.SetActive(false);
+        }
+
+        public void Show()
+        {
+            group.SetActive(true);
+        }
     }
 }

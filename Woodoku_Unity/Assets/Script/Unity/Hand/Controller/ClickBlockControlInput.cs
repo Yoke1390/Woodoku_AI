@@ -1,21 +1,24 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(BlockManipulator))]
-public class ClickBlockControlInput : MonoBehaviour, IPointerClickHandler
+namespace Script.Unity.Hand.Controller
 {
-    private BlockManipulator _blockManipulator;
-
-    private void Start()
+    [RequireComponent(typeof(BlockManipulator))]
+    public class ClickBlockControlInput : MonoBehaviour, IPointerClickHandler
     {
-        _blockManipulator = GetComponent<BlockManipulator>();
-    }
+        private BlockManipulator _blockManipulator;
 
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (_blockManipulator.IsMoving)
-            _blockManipulator.EndMove();
-        else
-            _blockManipulator.BeginMove();
+        private void Start()
+        {
+            _blockManipulator = GetComponent<BlockManipulator>();
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (_blockManipulator.IsMoving)
+                _blockManipulator.EndMove();
+            else
+                _blockManipulator.BeginMove();
+        }
     }
 }

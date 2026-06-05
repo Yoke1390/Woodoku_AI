@@ -1,11 +1,14 @@
-public readonly struct BlockOffset
+namespace Script.Core.Primitive
 {
-    public int x { get; }
-    public int y { get; }
-
-    public BlockOffset(int x, int y)
+    public readonly struct BlockOffset
     {
-        this.x = x;
-        this.y = y;
+        public int x { get; }
+        public int y { get; }
+
+        public BlockOffset(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
     }
 }

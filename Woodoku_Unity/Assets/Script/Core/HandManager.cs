@@ -1,96 +1,89 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Script.Core.Primitive;
 
-public class HandManager : IReadOnlyHands
+namespace Script.Core
 {
-    private readonly int _randomSeed;
-    private Random random;
-    private readonly BlockShape[] _blockShapes;
-
-    private BlockShape?[] _currentHand;
-
-    public IReadOnlyList<BlockShape?> CurrentHand => _currentHand;
-    public int NSlots { get; }
-    public event Action HandSettled;
-    public event Action<int> HandBlockConsumed;
-    public event Action<int, BlockShape> HandBlockGenerated;
-
-    public HandManager(IEnumerable<BlockShape> blockShapes, int NHandSlots, int randomSeed)
+    public class HandManager : IReadOnlyHands
     {
-        _blockShapes = blockShapes.ToArray();
-        if (_blockShapes.Length == 0)
-        {
-            throw new ArgumentException("No Block Shapes passed", nameof(_blockShapes));
-        }
+        private readonly BlockShape[] _blockShapes;
 
-        _randomSeed = randomSeed;
+        private readonly BlockShape?[] _currentHand;
+        private readonly int _randomSeed;
+        private Random _random;
 
-        if (NHandSlots > 0)
+        public HandManager(IEnumerable<BlockShape> blockShapes, int nHandSlots, int randomSeed)
         {
-            NSlots = NHandSlots;
-            _currentHand = new BlockShape?[NHandSlots];
-        }
-        else
-        {
-            throw new ArgumentException(
-                "Number of Hand Blocks must be popsitive",
-                nameof(NHandSlots)
-            );
-        }
-    }
+            _blockShapes = blockShapes.ToArray();
+            if (_blockShapes.Length == 0) throw new ArgumentException("No Block Shapes passed", nameof(_blockShapes));
 
-    public void Reset(int? newSeed = null)
-    {
-        random = new(newSeed ?? _randomSeed);
-        ConsumeAllHand();
-        GenerateAll();
-    }
+            _randomSeed = randomSeed;
 
-    private BlockShape GetRandomBlockShape()
-    {
-        if (random == null)
-        {
-            throw new InvalidOperationException("random generator must be initialized");
-        }
-        return _blockShapes[random.Next(0, _blockShapes.Length)];
-    }
-
-    private void GenerateAll()
-    {
-        for (int i = 0; i < NSlots; i++)
-        {
-            BlockShape blockShape = GetRandomBlockShape();
-            _currentHand[i] = blockShape;
-            HandBlockGenerated?.Invoke(i, blockShape);
-        }
-    }
-
-    private void ConsumeAllHand()
-    {
-        for (int i = 0; i < NSlots; i++)
-        {
-            if (_currentHand[i].HasValue)
+            if (nHandSlots > 0)
             {
-                _currentHand[i] = null;
-                HandBlockConsumed?.Invoke(i);
+                NSlots = nHandSlots;
+                _currentHand = new BlockShape?[nHandSlots];
+            }
+            else
+            {
+                throw new ArgumentException(
+                    "Number of Hand Blocks must be positive",
+                    nameof(nHandSlots)
+                );
             }
         }
-    }
 
-    public void CommitPlacement(int slotIndex)
-    {
-        _currentHand[slotIndex] = null;
-        HandBlockConsumed?.Invoke(slotIndex);
-        if (IsHandEmpty())
+        public IReadOnlyList<BlockShape?> CurrentHand => _currentHand;
+        public int NSlots { get; }
+        public event Action<int> HandBlockConsumed;
+        public event Action<int, BlockShape> HandBlockGenerated;
+        public event Action HandSettled;
+
+        public void Reset(int? newSeed = null)
         {
+            _random = new Random(newSeed ?? _randomSeed);
+            ConsumeAllHand();
             GenerateAll();
         }
-        HandSettled?.Invoke();
-    }
 
-    private bool IsHandEmpty()
-    {
-        return Array.TrueForAll(_currentHand, hand => !hand.HasValue);
+        private BlockShape GetRandomBlockShape()
+        {
+            if (_random == null) throw new InvalidOperationException("random generator must be initialized");
+            return _blockShapes[_random.Next(0, _blockShapes.Length)];
+        }
+
+        private void GenerateAll()
+        {
+            for (var i = 0; i < NSlots; i++)
+            {
+                var blockShape = GetRandomBlockShape();
+                _currentHand[i] = blockShape;
+                HandBlockGenerated?.Invoke(i, blockShape);
+            }
+        }
+
+        private void ConsumeAllHand()
+        {
+            for (var i = 0; i < NSlots; i++)
+                if (_currentHand[i].HasValue)
+                {
+                    _currentHand[i] = null;
+                    HandBlockConsumed?.Invoke(i);
+                }
+        }
+
+        public void CommitPlacement(int slotIndex)
+        {
+            _currentHand[slotIndex] = null;
+            HandBlockConsumed?.Invoke(slotIndex);
+            if (IsHandEmpty()) GenerateAll();
+            HandSettled?.Invoke();
+        }
+
+        private bool IsHandEmpty()
+        {
+            return Array.TrueForAll(_currentHand, hand => !hand.HasValue);
+        }
     }
 }

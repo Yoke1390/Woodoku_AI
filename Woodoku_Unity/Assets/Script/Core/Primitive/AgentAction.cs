@@ -1,11 +1,14 @@
-public readonly struct AgentAction
+namespace Script.Core.Primitive
 {
-    public int SlotIndex { get; }
-    public BoardPosition BasePosition { get; }
-
-    public AgentAction(int slotIndex, BoardPosition basePosition)
+    public readonly struct AgentAction
     {
-        SlotIndex = slotIndex;
-        BasePosition = basePosition;
+        public int SlotIndex { get; }
+        public BoardPosition BasePosition { get; }
+
+        public AgentAction(int slotIndex, BoardPosition basePosition)
+        {
+            SlotIndex = slotIndex;
+            BasePosition = basePosition;
+        }
     }
 }

@@ -2,28 +2,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public readonly struct BlockShape
+namespace Script.Core.Primitive
 {
-    private readonly IReadOnlyList<BlockOffset> _blocks;
-    public IReadOnlyList<BlockOffset> Blocks => _blocks ?? Array.Empty<BlockOffset>();
-    public int NBlocks => _blocks.Count;
-
-    public int MaxX { get; }
-    public int MaxY { get; }
-
-    public BlockShape(IEnumerable<BlockOffset> blocks)
+    public readonly struct BlockShape
     {
-        _blocks = blocks.ToList();
+        private readonly IReadOnlyList<BlockOffset> _blocks;
+        public IReadOnlyList<BlockOffset> Blocks => _blocks ?? Array.Empty<BlockOffset>();
+        public int NBlocks => _blocks.Count;
 
-        if (_blocks.Count == 0)
+        public int MaxX { get; }
+        public int MaxY { get; }
+
+        public BlockShape(IEnumerable<BlockOffset> blocks)
         {
-            throw new ArgumentException("Number of blocks must be positive.", nameof(_blocks));
+            _blocks = blocks.ToList();
+
+            if (_blocks.Count == 0) throw new ArgumentException("Number of blocks must be positive.", nameof(_blocks));
+
+            var maxX = _blocks.Max(b => b.x);
+            var maxY = _blocks.Max(b => b.y);
+
+            MaxX = maxX;
+            MaxY = maxY;
         }
-
-        int maxX = _blocks.Max(b => b.x);
-        int maxY = _blocks.Max(b => b.y);
-
-        MaxX = maxX;
-        MaxY = maxY;
     }
 }

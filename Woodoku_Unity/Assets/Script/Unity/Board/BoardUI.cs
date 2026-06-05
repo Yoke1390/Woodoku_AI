@@ -1,166 +1,145 @@
 using System.Collections.Generic;
+using Script.Core;
+using Script.Core.Primitive;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(GridLayoutGroup))]
-[RequireComponent(typeof(RectTransform))]
-public class BoardUI : MonoBehaviour
+namespace Script.Unity.Board
 {
-    private IReadOnlyBoard boardData;
-
-    [SerializeField]
-    private Cell cellPrefab;
-
-    [SerializeField]
-    private Color backgroundColor1;
-
-    [SerializeField]
-    private Color backgroundColor2;
-
-    [SerializeField]
-    private Color defaultBorderColor;
-
-    [SerializeField]
-    private Color highlightBorderColor;
-
-    private List<Cell> cellList = new List<Cell>();
-    public float CellSize { get; private set; }
-
-    private RectTransform rectTransform;
-    private GridLayoutGroup gridLayout;
-
-    public void Initialize(IReadOnlyBoard boardData)
+    [RequireComponent(typeof(GridLayoutGroup))]
+    [RequireComponent(typeof(RectTransform))]
+    public class BoardUI : MonoBehaviour
     {
-        this.boardData = boardData;
-        boardData.CellUpdate += BoardData_OnCellUpdate;
+        [SerializeField] private Cell cellPrefab;
 
-        rectTransform = GetComponent<RectTransform>();
-        rectTransform.pivot = Vector2.zero;
+        [SerializeField] private Color backgroundColor1;
 
-        gridLayout = GetComponent<GridLayoutGroup>();
-        // XY座標の向きを合わせる (x：右が正, y：上が正)
-        gridLayout.startCorner = GridLayoutGroup.Corner.LowerLeft;
-        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        gridLayout.constraintCount = boardData.BoardSize;
-        gridLayout.padding = new RectOffset(0, 0, 0, 0);
-        gridLayout.spacing = Vector2.zero;
-        // UIのレイアウト計算（Horizontal Layout Groupなど）を強制的に完了させる
-        Canvas.ForceUpdateCanvases();
+        [SerializeField] private Color backgroundColor2;
 
-        AdjustCellSize();
-        InitializeCells();
-    }
+        [SerializeField] private Color defaultBorderColor;
 
-    private void InitializeCells()
-    {
-        int totalCellNumber = boardData.BoardSize * boardData.BoardSize;
-        for (int i = 0; i < totalCellNumber; i++)
+        [SerializeField] private Color highlightBorderColor;
+
+        private readonly List<Cell> _cellList = new();
+
+        private IReadOnlyBoard _boardData;
+        private GridLayoutGroup _gridLayout;
+
+        private RectTransform _rectTransform;
+        public float CellSize { get; private set; }
+
+        public void Initialize(IReadOnlyBoard boardData)
         {
-            Cell newCell = Instantiate(cellPrefab, gameObject.transform);
-            SetCellColor(i, newCell);
-            newCell.Hide();
-            cellList.Add(newCell);
-        }
-    }
+            _boardData = boardData;
+            boardData.CellUpdate += BoardData_OnCellUpdate;
 
-    private void SetCellColor(int index, Cell cell)
-    {
-        int x = index % boardData.BoardSize;
-        int y = index / boardData.BoardSize;
+            _rectTransform = GetComponent<RectTransform>();
+            _rectTransform.pivot = Vector2.zero;
 
-        Color backgroundColor = GetBackgroundColor(x, y);
-        cell.SetBackgroundColor(backgroundColor);
+            _gridLayout = GetComponent<GridLayoutGroup>();
+            // XY座標の向きを合わせる (x：右が正, y：上が正)
+            _gridLayout.startCorner = GridLayoutGroup.Corner.LowerLeft;
+            _gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            _gridLayout.constraintCount = boardData.BoardSize;
+            _gridLayout.padding = new RectOffset(0, 0, 0, 0);
+            _gridLayout.spacing = Vector2.zero;
+            // UIのレイアウト計算（Horizontal Layout Groupなど）を強制的に完了させる
+            Canvas.ForceUpdateCanvases();
 
-        cell.InitializeBorder(defaultBorderColor);
-
-        if ((x + 1) % boardData.GridSize == 0)
-        {
-            cell.HighlightRightBorder(highlightBorderColor);
-        }
-        if ((y + 1) % boardData.GridSize == 0)
-        {
-            cell.HighlightTopBorder(highlightBorderColor);
+            AdjustCellSize();
+            InitializeCells();
         }
 
-        if ((x + 1) == boardData.BoardSize)
+        private void InitializeCells()
         {
-            cell.HideRightBorder();
+            var totalCellNumber = _boardData.BoardSize * _boardData.BoardSize;
+            for (var i = 0; i < totalCellNumber; i++)
+            {
+                var newCell = Instantiate(cellPrefab, gameObject.transform);
+                SetCellColor(i, newCell);
+                newCell.Hide();
+                _cellList.Add(newCell);
+            }
         }
-        if ((y + 1) == boardData.BoardSize)
-        {
-            cell.HideTopBorder();
-        }
-    }
 
-    private Color GetBackgroundColor(int x, int y)
-    {
-        int gridX = x / boardData.GridSize;
-        int gridY = y / boardData.GridSize;
+        private void SetCellColor(int index, Cell cell)
+        {
+            var x = index % _boardData.BoardSize;
+            var y = index / _boardData.BoardSize;
 
-        if ((gridX + gridY) % 2 == 0)
-        {
-            return backgroundColor1;
+            var backgroundColor = GetBackgroundColor(x, y);
+            cell.SetBackgroundColor(backgroundColor);
+
+            cell.InitializeBorder(defaultBorderColor);
+
+            if ((x + 1) % _boardData.GridSize == 0) cell.HighlightRightBorder(highlightBorderColor);
+            if ((y + 1) % _boardData.GridSize == 0) cell.HighlightTopBorder(highlightBorderColor);
+
+            if (x + 1 == _boardData.BoardSize) cell.HideRightBorder();
+            if (y + 1 == _boardData.BoardSize) cell.HideTopBorder();
         }
-        else
+
+        private Color GetBackgroundColor(int x, int y)
         {
+            var gridX = x / _boardData.GridSize;
+            var gridY = y / _boardData.GridSize;
+
+            if ((gridX + gridY) % 2 == 0) return backgroundColor1;
+
             return backgroundColor2;
         }
-    }
 
-    private void AdjustCellSize()
-    {
-        CellSize =
-            Mathf.Min(rectTransform.rect.width, rectTransform.rect.height) / boardData.BoardSize;
-
-        gridLayout.cellSize = CellSize * Vector2.one;
-    }
-
-    public void UpdateCellState(int x, int y, bool isFilled)
-    {
-        int index = y * boardData.BoardSize + x;
-        if (isFilled)
+        private void AdjustCellSize()
         {
-            cellList[index].Show();
+            CellSize =
+                Mathf.Min(_rectTransform.rect.width, _rectTransform.rect.height) / _boardData.BoardSize;
+
+            _gridLayout.cellSize = CellSize * Vector2.one;
         }
-        else
+
+        public void UpdateCellState(int x, int y, bool isFilled)
         {
-            cellList[index].Hide();
+            var index = y * _boardData.BoardSize + x;
+            if (isFilled)
+                _cellList[index].Show();
+            else
+                _cellList[index].Hide();
         }
-    }
 
-    internal void BoardData_OnCellUpdate(object sender, CellUpdateData data)
-    {
-        bool isFilled = data.State == CellState.Filled;
-        UpdateCellState(data.X, data.Y, isFilled);
-    }
+        internal void BoardData_OnCellUpdate(object sender, CellUpdateData data)
+        {
+            var isFilled = data.State == CellState.Filled;
+            UpdateCellState(data.X, data.Y, isFilled);
+        }
 
-    public bool TryScreenPointToBoardPosition(
-        Vector2 screenPoint,
-        Camera cam,
-        Vector2 centerCellOffset,
-        out BoardPosition boardPosition
-    )
-    {
-        Vector2 localOffset = centerCellOffset * CellSize;
-        if (
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                rectTransform,
-                screenPoint,
-                cam,
-                out Vector2 localPointerPosition
-            )
+        public bool TryScreenPointToBoardPosition(
+            Vector2 screenPoint,
+            Camera cam,
+            Vector2 centerCellOffset,
+            out BoardPosition boardPosition
         )
         {
-            Vector2 screenLocalPosition = localPointerPosition - localOffset;
+            var localOffset = centerCellOffset * CellSize;
+            if (
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    _rectTransform,
+                    screenPoint,
+                    cam,
+                    out var localPointerPosition
+                )
+            )
+            {
+                var screenLocalPosition = localPointerPosition - localOffset;
 
-            int boardPositionX = Mathf.FloorToInt(screenLocalPosition.x / CellSize);
-            int boardPositionY = Mathf.FloorToInt(screenLocalPosition.y / CellSize);
+                var boardPositionX = Mathf.FloorToInt(screenLocalPosition.x / CellSize);
+                var boardPositionY = Mathf.FloorToInt(screenLocalPosition.y / CellSize);
 
-            boardPosition = new BoardPosition(boardPositionX, boardPositionY);
-            return true;
+                boardPosition = new BoardPosition(boardPositionX, boardPositionY);
+                return true;
+            }
+
+            boardPosition = default;
+            return false;
         }
-
-        boardPosition = default(BoardPosition);
-        return false;
     }
 }

@@ -1,47 +1,53 @@
+using Script.Core;
+using Script.Core.Primitive;
+using Script.Unity.Hand.Controller;
 using UnityEngine;
 
-public class HandUI : MonoBehaviour
+namespace Script.Unity.Hand
 {
-    [SerializeField] private HandBlock handBlockPrefab;
-    [SerializeField] private RectTransform[] handSlots;
-    private float _cellSize;
-    private BlockControlMode _controlMode;
-    private EndBlockMoveHandler _endBlockMoveHandler;
-
-    private HandBlock[] _handBlocks;
-
-    private IReadOnlyHands _hands;
-
-    public void Initialize(
-        EndBlockMoveHandler endBlockMoveHandler,
-        float cellSize,
-        IReadOnlyHands hands,
-        BlockControlMode controlMode = BlockControlMode.Drag
-    )
+    public class HandUI : MonoBehaviour
     {
-        _endBlockMoveHandler = endBlockMoveHandler;
-        _cellSize = cellSize;
-        _hands = hands;
-        _controlMode = controlMode;
+        [SerializeField] private HandBlock handBlockPrefab;
+        [SerializeField] private RectTransform[] handSlots;
+        private float _cellSize;
+        private BlockControlMode _controlMode;
+        private EndBlockMoveHandler _endBlockMoveHandler;
 
-        _handBlocks = new HandBlock[hands.NSlots];
+        private HandBlock[] _handBlocks;
 
-        _hands.HandBlockConsumed += OnHandBlockConsumed;
-        _hands.HandBlockGenerated += GenerateHandBlock;
-    }
+        private IReadOnlyHands _hands;
 
-    private void OnHandBlockConsumed(int slotIndex)
-    {
-        Destroy(_handBlocks[slotIndex].gameObject);
-    }
+        public void Initialize(
+            EndBlockMoveHandler endBlockMoveHandler,
+            float cellSize,
+            IReadOnlyHands hands,
+            BlockControlMode controlMode = BlockControlMode.Drag
+        )
+        {
+            _endBlockMoveHandler = endBlockMoveHandler;
+            _cellSize = cellSize;
+            _hands = hands;
+            _controlMode = controlMode;
 
-    private void GenerateHandBlock(int slotIndex, BlockShape blockShape)
-    {
-        var newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
-        newHandBlock.Initialize(blockShape, _cellSize);
-        _handBlocks[slotIndex] = newHandBlock;
+            _handBlocks = new HandBlock[hands.NSlots];
 
-        newHandBlock.GetComponent<BlockManipulator>().Initialize(slotIndex, _endBlockMoveHandler);
-        newHandBlock.gameObject.AddComponent(GameSetting.GetBlockControlInputType(_controlMode));
+            _hands.HandBlockConsumed += OnHandBlockConsumed;
+            _hands.HandBlockGenerated += GenerateHandBlock;
+        }
+
+        private void OnHandBlockConsumed(int slotIndex)
+        {
+            Destroy(_handBlocks[slotIndex].gameObject);
+        }
+
+        private void GenerateHandBlock(int slotIndex, BlockShape blockShape)
+        {
+            var newHandBlock = Instantiate(handBlockPrefab, handSlots[slotIndex]);
+            newHandBlock.Initialize(blockShape, _cellSize);
+            _handBlocks[slotIndex] = newHandBlock;
+
+            newHandBlock.GetComponent<BlockManipulator>().Initialize(slotIndex, _endBlockMoveHandler);
+            newHandBlock.gameObject.AddComponent(GameSetting.GetBlockControlInputType(_controlMode));
+        }
     }
 }

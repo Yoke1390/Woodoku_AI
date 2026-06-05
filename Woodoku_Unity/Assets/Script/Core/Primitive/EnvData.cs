@@ -1,25 +1,28 @@
-public readonly struct StepResult
+namespace Script.Core.Primitive
 {
-    public Observation Observation { get; }
-    public int Reward { get; }
-    public bool Done { get; }
-
-    public StepResult(Observation observation, int reward, bool done)
+    public readonly struct StepResult
     {
-        Observation = observation;
-        Reward = reward;
-        Done = done;
+        public Observation Observation { get; }
+        public int Reward { get; }
+        public bool Done { get; }
+
+        public StepResult(Observation observation, int reward, bool done)
+        {
+            Observation = observation;
+            Reward = reward;
+            Done = done;
+        }
     }
-}
 
-public readonly struct Observation
-{
-    public IReadOnlyBoard Board { get; }
-    public IReadOnlyHands Hands { get; }
-
-    public Observation(IReadOnlyBoard board, IReadOnlyHands hands)
+    public readonly struct Observation
     {
-        Board = board;
-        Hands = hands;
+        public IReadOnlyBoard Board { get; }
+        public IReadOnlyHands Hands { get; }
+
+        public Observation(IReadOnlyBoard board, IReadOnlyHands hands)
+        {
+            Board = board;
+            Hands = hands;
+        }
     }
 }
