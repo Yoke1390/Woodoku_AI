@@ -13,7 +13,7 @@ Woodoku_Unity/[Rr]ecordings/
 WoodDoku_Unity/[Aa]ssets/Plugins/Editor/JetBrains*
 
 # Jetbrains Editor cache
-*/.idea/
+**/.idea/
 
 # Visual Studio (Code) cache directory
 .vs/
