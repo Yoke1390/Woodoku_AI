@@ -25,51 +25,72 @@ for an AI agent** to observe state and take actions. The Unity project lives in 
 
 - Unity Editor **2022.3.10f1**, C# 9, .NET Standard 2.1.
 - No build/test scripts and no test suite exist. Develop by opening `Woodoku_Unity/` in the
-  Unity Editor and pressing Play; the main scene is `Assets/Scenes/MainScene.unity`.
+  Unity Editor and pressing Play. `Assets/Scenes/MainScene.unity` = human play;
+  `Assets/Scenes/AgentRunner.unity` = an agent plays automatically.
 - All gameplay code is under `Woodoku_Unity/Assets/Script/`. `Library/`, `Temp/`, `obj/` are
   generated — ignore them.
 
 ## Architecture
 
-The central design principle (from ROADMAP) is a strict split between **data/logic** and
-**rendering**. Pure-C# data classes hold game state and never touch Unity rendering; UI
-`MonoBehaviour`s react to events.
+Two assemblies enforce the central principle — a strict split between **data/logic** and
+**rendering** — at the *compiler* level. `Woodoku.Core` (asmdef, `noEngineReferences: true`)
+holds all game state/logic and may not reference `UnityEngine`; `Woodoku.Unity` depends on Core
+and does rendering/input. Dependency is one-way (Unity → Core), so writing `using UnityEngine`
+in the logic layer is a compile error.
 
-**Data / logic (no rendering):**
-- `BoardData` (`Board/`) — owns the `CellState[,]` grid. Sized from `GameSetting.GridSize`:
-  `BoardSize = GridSize * GridSize` (default 9×9), with `NGrids` sub-blocks per axis. Holds
-  *all* placement and line-clear logic: `CanPlaceBlock`, `TryPlaceBlock` →
-  `PlaceBlockAndClear` (place → scan rows/cols/3×3 via `GetCellsToClear` → clear). Emits
-  `CellUpdate` events on every cell change — this is the only channel the UI listens to.
-- `BlockData` (`Block/`) — `ScriptableObject` defining a piece shape as `Vector2Int[]`. Assets
-  live in `Assets/Resources/` and are bulk-loaded with `Resources.LoadAll<BlockData>("")`.
-  `OnValidate` auto-normalizes coordinates so the shape's origin is `(0,0)`; derived values
-  (`BlockCells`, `Center`, `MaxX/Y`) are eagerly cached.
-- `BoardPosition`, `BlockOffset` — `readonly struct` value types; `BoardPosition + BlockOffset`
-  is defined so block-cell-to-board math reads naturally.
-- `PlacementResult` — outcome of a placement (success, cleared cells/count) for scoring/effects.
+**Data / logic — `Assets/Script/Core/` (no UnityEngine):**
+- `GameSession` — the game proper and the **only path that mutates state**. Wraps `BoardData` +
+  `HandManager` + `ScoreManager` (all private) and exposes them as read-only interfaces
+  (`IReadOnlyBoard` / `IReadOnlyHands` / `IReadOnlyScore`). `TryPlaceBlock(slot, pos)` and
+  `TryPlaceBlock(AgentAction)` place a block; `State : GameState { Playing, GameOver }`; raises
+  `GameOver` when the hand has no legal action left.
+- `BoardData` — owns the `CellState[,]` grid (sized from `GameSetting.GridSize`:
+  `BoardSize = GridSize*GridSize`, default 9×9, `NGrids` sub-blocks/axis). Holds *all* placement
+  and line-clear logic: `TryPlaceBlock` (place → scan rows/cols/3×3 → clear) and
+  `EnumerateLegalActions(BlockShape)`. Emits `CellUpdate` on every cell change — the only channel
+  the UI listens to.
+- `HandManager` — owns the N (=`WoodokuGameManager.NHandSlots`, 3) hand slots, picks shapes with
+  a seeded `System.Random`, refills when empty; raises `HandBlockGenerated` /
+  `HandBlockConsumed` / `HandSettled`.
+- `ScoreManager` — score from block size + line-clear/combo/streak bonuses; raises `ScoreUpdate`.
+- `BlockShape` — the pure-logic piece type. The `BlockData` `ScriptableObject` (`Unity/Hand/`,
+  `Vector2Int[]`, bulk-loaded with `Resources.LoadAll<BlockData>("")`) is authoring-only;
+  `BlockData.ToShape()` is the boundary. `BoardPosition` / `BlockOffset` / `AgentAction` /
+  `PlacementAction` / `PlacementResult` are `readonly struct` value types in `Core/Primitive/`.
 
-**UI / Unity:**
-- `WoodokuGameManager` — root orchestrator (`Start`). Wires `BoardData` ↔ `BoardUI` (subscribes
-  `BoardUI.BoradData_OnCellUpdate` to `boardData.CellUpdate`), and `HandManager` events to
-  game-over checking.
-- `BoardUI` — instantiates `Cell` prefabs into a `GridLayoutGroup`, computes `CellSize`,
-  converts screen→board coordinates (`TryScreenPointToBoardPosition`). Passive: redraws cells
-  only in response to `CellUpdate`.
-- `HandManager` — owns the 3 hand slots, picks blocks (seeded `Unity.Mathematics.Random`),
-  spawns `HandBlock`s, refills when empty, and raises `BlockPlaced` / `HandBlockGenerated`.
-- `DraggableBlock` / `HandBlock` / `BlockPiece` / `BlockPreview` — drag-and-drop input. On drop,
-  `DraggableBlock` calls a `DropHandler` delegate (the `WoodokuGameManager.HandleDropRequest`
-  pointer→`BoardData.TryPlaceBlock` bridge), keeping input decoupled from board logic.
+**AI environment — `Assets/Script/Core/` (also Unity-free):**
+- `WoodokuEnv` — Gym-like wrapper over `GameSession`: `Reset(seed)`, `Step(AgentAction)`
+  (`reward` = score delta, `done` = GameOver), `LegalActions`. `Observation` (board+hands) and
+  `StepResult` are `readonly struct`s.
+- `IWoodokuAgent.SelectAction(Observation, legalActions)` with baseline `RandomAgent`
+  (`Core/Agents/`).
 
-**Placement flow:** drag → `DraggableBlock.OnEndDrag` → `DropHandler` →
-`WoodokuGameManager.HandleDropRequest` → `BoardUI` screen-to-board conversion →
-`BoardData.TryPlaceBlock` → `CellUpdate` events → `BoardUI` redraw.
+**UI / Unity — `Assets/Script/Unity/`:**
+- `WoodokuGameManager` — human-play orchestrator. `Initialize` loads `BlockData` from Resources,
+  builds the `GameSession`, and wires `gameSession.Board/Hands/Score` into `BoardUI` / `HandUI` /
+  `ScoreUI`. Input arrives via the `EndBlockMoveHandler` delegate (`HandleEndBlockMoveRequest`):
+  screen→board conversion, then `GameSession.TryPlaceBlock`.
+- `AgentRunner` — same wiring, but drives the session from an `IWoodokuAgent` in a coroutine with
+  human input disabled (`Assets/Scenes/AgentRunner.unity`).
+- `BoardUI` — instantiates `Cell` prefabs into a `GridLayoutGroup`, computes `CellSize`, converts
+  screen→board (`TryScreenPointToBoardPosition`). Passive: redraws cells only on `CellUpdate`.
+- Hand input — `BlockManipulator` holds the move state (`BeginMove` / `EndMove` / follow-pointer);
+  `DragBlockControlInput` and `ClickBlockControlInput` are interchangeable input front-ends
+  selected by `GameSetting.BlockControlMode` (Drag / Click). On drop they call the
+  `EndBlockMoveHandler` delegate, keeping input decoupled from board logic.
+
+**Placement flow:** input → `BlockManipulator.EndMove` → `EndBlockMoveHandler`
+(`WoodokuGameManager.HandleEndBlockMoveRequest`) → `BoardUI` screen-to-board conversion →
+`GameSession.TryPlaceBlock` → `CellUpdate` / `ScoreUpdate` events → UI redraw.
 
 ## Notable in-progress state
 
-- `WoodokuGameManager.Start` contains temporary test `SetCell` calls and a hardcoded random seed
-  — scaffolding, not final behavior (see ROADMAP §5).
-- Game-over is detected (`IsGameOver`) but only logs; no `GameState` enum, game-over UI, or
-  restart yet (ROADMAP §7.3). The AI observation/action API (ROADMAP §8) is mostly unbuilt.
-- Known typo kept consistent across call sites: `BoradData_OnCellUpdate` (ROADMAP flags fixing it).
+- The strong AI agent is the main remaining piece. The environment harness (`WoodokuEnv`,
+  `IWoodokuAgent`, `RandomAgent`, `AgentRunner`) is built, but a competitive agent (features +
+  linear eval + (Noisy) CEM, then probability-aware expectimax/MCTS) is not. The plan lives in
+  `Review/review3_ai_implementation.md` and ROADMAP §8.4.
+- Seeding: `GameSession` defaults to `seed = TestSeed (1234)`; `Begin(seed)` /
+  `WoodokuEnv.Reset(seed)` take an explicit seed, but `WoodokuGameManager` still uses the default
+  (ROADMAP §5).
+- `README.md` (Japanese) is the recruiter-facing entry point for the portfolio; screenshots/GIFs
+  are still TODO.

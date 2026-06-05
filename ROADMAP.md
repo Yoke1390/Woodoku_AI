@@ -71,6 +71,8 @@ Cell (RectTransform)
 
 ## 4. ドラッグ＆ドロップ機能の実装（UI操作と内部ロジックの分離）
 
+> 📝 **その後リファクタ済み（入力と移動の分離）**: `DraggableBlock` は廃止。移動状態を持つ `BlockManipulator` と、入力デバイス別の `DragBlockControlInput` / `ClickBlockControlInput` に分割し、`GameSetting.BlockControlMode`（Drag / Click）で切り替える。配置依頼は `DropHandler` ではなく `EndBlockMoveHandler` デリゲート経由（`WoodokuGameManager.HandleEndBlockMoveRequest`）。以下は当時の `DraggableBlock` 前提の記述。
+
 - [x] 🎯 `DraggableBlock` コンポーネントの作成（`IBeginDragHandler`, `IDragHandler`, `IEndDragHandler` 実装）。
 - [x] 🎯 `OnBeginDrag` 処理:
   - スケールを 1.0f に拡大
@@ -93,7 +95,7 @@ Cell (RectTransform)
 - [x] 🔧 **配置〜消去ロジックの `BoardData` への集約**: 現在 `WoodokuGameManager.PlaceBlock` (private) が `SetCell` を直接呼んでいる。§6 の消去判定と一体化させるため、`BoardData.PlaceBlock(BlockData, BoardPosition) : PlacementResult` に責務移譲する設計に変更。
 - [x] 🔧 `WoodokuGameManager.GetBlockBaseBoardPosition` の薄いラッパー削除: 中身が `boardUI.TryScreenPointToBoardPosition` への単純な転送のみ。`HandleDropRequest` 内に直接書く。
 - [x] 🔧 起動時テスト用の `SetCell` 呼び出しは削除済み (`WoodokuGameManager`)。
-- [ ] 🔧 ハードコードされた乱数シード `randomSeed = 1234 // test` の整理（`WoodokuGameManager.Initialize`）。本番投入時にシード注入 or ランダム化。
+- [ ] 🔧 ハードコードされた乱数シードの整理: 現在は `GameSession` の既定引数 `seed = TestSeed (1234)`。`GameSession.Begin(seed)` / `WoodokuEnv.Reset(seed)` で注入は可能だが、`WoodokuGameManager` は既定シードのまま。本番投入時にランダム化 or 注入経路を整理。
 
 ## 6. 消去判定（ラインと3x3ブロック）の実装
 
@@ -133,11 +135,16 @@ ROADMAP 方針に従い、判定ロジックは **すべて `BoardData` に集�
 
 ### 7.3 ゲームオーバー処理
 
-> `GameSession.GameOver` イベントは実装済み（手詰まり時に発火）。以下の状態管理・UI・リスタートは未着手。
+> ✅ 完了。`GameSession.GameOver` イベント（手詰まり時に発火）に加え、`GameState` enum・ゲームオーバー UI（`GameOverUI`）・リスタート（`GameSession.Begin` で盤面/手札/スコアをリセット）まで実装済み。
 
 - [x] 🎯 ゲーム状態の管理: `enum GameState { Playing, GameOver }`。
 - [x] 🎯 ゲームオーバー UI の表示。
 - [x] 🎯 リスタート機能: `BoardData.Reset()` + 手札再生成 + 状態リセット。
+
+### 7.4 スコアリング
+
+- [x] 🎯 `ScoreManager`（純粋ロジック、`IReadOnlyScore` 実装）: 配置ブロックのマス数 + ライン消去ボーナス（同時消し数 `NClearedTimes`・連続消し `streak`）でスコア加算。`PlacementResult` を受けて計算。
+- [x] 🎯 `GameSession.Score : IReadOnlyScore`（`Score` + `ScoreUpdate` イベント）で公開。UI 側は `ScoreUI` がイベント購読して表示。
 
 ## 8. AI 連携用 API の整備
 
@@ -147,7 +154,7 @@ ROADMAP 冒頭の「AI環境として機能させる」最終目標に向けた�
 
 - [x] 🎯 手札の観測: `GameSession.Hands : IReadOnlyHands`（`CurrentHand : IReadOnlyList<BlockShape?>` + `HandBlockGenerated`）。
 - [x] 🎯 盤面の観測: `GameSession.Board : IReadOnlyBoard`（`GetCell(BoardPosition)` + `GridSize`/`BoardSize`/`NGrids` + `CellUpdate`）。専用の読み取り専用インターフェースで公開済み。
-- [x] 🎯 ゲーム状態の観測: `GameSession.CurrentState : GameState` — `GameState` enum 未実装のため保留（§7.3 と一体）。
+- [x] 🎯 ゲーム状態の観測: `GameSession.State : GameState`（`enum { Playing, GameOver }`）。`WoodokuEnv.Step` の `done` 判定にも使用。
 
 ### 8.2 行動 API
 
@@ -157,8 +164,19 @@ ROADMAP 冒頭の「AI環境として機能させる」最終目標に向けた�
 ### 8.3 イベント
 
 - [x] 🎯 ゲームオーバー通知: `GameSession.GameOver` イベント（エピソード終端検知用）。
-- [ ] 🎯 `StateChanged` — Playing ↔ GameOver の双方向遷移通知。`GameState` 導入後に整備。
+- [ ] 🎯 `StateChanged` — Playing ↔ GameOver の双方向遷移通知。`GameState` は導入済みなので、あとは公開イベントを足すだけ。
 - [ ] 🎯 配置・消去・補充の各イベントを `GameSession` の公開面に出す（学習信号用。ロジック層には `CellUpdate`/`HandSettled`/`HandBlockGenerated` が既に存在）。
+
+### 8.4 エージェント実行基盤（環境ラッパーと差し替え可能なエージェント）
+
+§8.1〜8.3 の観測/行動/イベントを、強化学習でおなじみの環境インターフェースとして束ねた層。
+
+- [x] 🎯 合法手の列挙: `BoardData.EnumerateLegalActions(BlockShape) : IEnumerable<PlacementAction>`（盤面全座標を試し、配置可能な基準位置を列挙）と、スロット横断でまとめる `GameSession.GetLegalActions() : IEnumerable<AgentAction>`。
+- [x] 🎯 行動の値型 `AgentAction`（`SlotIndex` × `BasePosition`）。`GameSession.TryPlaceBlock(AgentAction)` オーバーロードあり。
+- [x] 🎯 Gym 風環境ラッパー `WoodokuEnv`: `Reset(seed) : Observation` / `Step(AgentAction) : StepResult`（`reward = スコア差分`, `done = GameOver`）/ `LegalActions`。`Observation`（盤面+手札）・`StepResult`（観測+報酬+done）は `readonly struct`。
+- [x] 🎯 エージェント抽象 `IWoodokuAgent.SelectAction(Observation, legalActions) : AgentAction` と、ベースライン `RandomAgent`（合法手から一様ランダム）。
+- [x] 🎯 可視化実行 `AgentRunner`(MonoBehaviour): 人間入力を無効化し、コルーチンで `stepDelay` 間引きしながらエージェントの自動プレイを既存 UI に描画。シーンは `Assets/Scenes/AgentRunner.unity`。
+- [ ] 🎯 強いエージェント本体（特徴量＋線形評価、(Noisy) CEM、確率を考慮した expectimax / MCTS）。方針は `Review/review3_ai_implementation.md`。
 
 ---
 
