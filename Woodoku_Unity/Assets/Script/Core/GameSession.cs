@@ -1,17 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Script.Core.Board;
 using Script.Core.Interfaces;
 using Script.Core.Primitive;
+using Script.Core.Score;
 
 namespace Script.Core
 {
-    public enum GameState
-    {
-        Playing,
-        GameOver
-    }
-
     public class GameSession
     {
         private const int TestSeed = 1234;
@@ -33,7 +29,7 @@ namespace Script.Core
             _handManager.HandSettled += CheckForGameOver;
         }
 
-        public GameState State { get; private set; }
+        public GameStatus Status { get; private set; }
         public IReadOnlyBoard Board => _boardData;
         public IBoardEventPublisher BoardEvent => _boardData;
         public IReadOnlyHands Hands => _handManager;
@@ -45,14 +41,14 @@ namespace Script.Core
             _boardData.Reset();
             _handManager.Reset(seed);
             _scoreManager.Reset();
-            State = GameState.Playing;
+            Status = GameStatus.Playing;
         }
 
         private void CheckForGameOver()
         {
             if (IsGameOver())
             {
-                State = GameState.GameOver;
+                Status = GameStatus.GameOver;
                 GameOver?.Invoke();
             }
         }
@@ -69,14 +65,14 @@ namespace Script.Core
                 BlockShape? shape = Hands.CurrentHand[slot];
                 if (!shape.HasValue)
                     continue;
-                foreach (PlacementAction p in _boardData.EnumerateLegalActions(shape.Value))
+                foreach (PlacementAction p in BoardRule.EnumerateLegalActions(_boardData, shape.Value))
                     yield return new AgentAction(slot, p.BasePosition);
             }
         }
 
         public PlacementResult TryPlaceBlock(int slotIndex, BoardPosition blockBaseBoardPosition)
         {
-            if (State == GameState.GameOver)
+            if (Status == GameStatus.GameOver)
                 return PlacementResult.Failure();
 
             if (slotIndex < 0 || slotIndex >= _handManager.CurrentHand.Count)

@@ -1,18 +1,28 @@
 namespace Script.Core.Primitive
 {
-    public struct PlacementPreview
+    public readonly struct PlacementPreview
     {
-        public readonly PlacementAction LastAction;
         public readonly BoardSnapShot Board;
+        public readonly PlacementAction LastAction;
         public readonly PlacementResult Result;
         public readonly int ScoreDiff;
 
-        public PlacementPreview(PlacementAction lastAction, BoardSnapShot board, PlacementResult result, int scoreDiff)
+        public PlacementPreview(BoardSnapShot board, PlacementAction lastAction, PlacementResult result, int scoreDiff)
         {
             LastAction = lastAction;
             Board = board;
             Result = result;
             ScoreDiff = scoreDiff;
+        }
+
+        public static PlacementPreview Failure(BoardSnapShot board, PlacementAction action)
+        {
+            return new PlacementPreview(
+                board,
+                action,
+                PlacementResult.Failure(action.Shape),
+                0
+            );
         }
     }
 }

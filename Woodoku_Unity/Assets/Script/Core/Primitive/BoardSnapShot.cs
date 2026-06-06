@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Script.Core.Interfaces;
 
 namespace Script.Core.Primitive
@@ -12,7 +14,7 @@ namespace Script.Core.Primitive
 
         public CellState GetCell(BoardPosition boardPosition)
         {
-            return this.IsInBoard(boardPosition)
+            return this.Contains(boardPosition)
                 ? _board[boardPosition.x, boardPosition.y]
                 : CellState.OutOfBoard;
         }
@@ -28,8 +30,39 @@ namespace Script.Core.Primitive
             BoardSize = GridSize * GridSize;
             NGrids = BoardSize / GridSize;
 
-            _board = new CellState[BoardSize, BoardSize];
             _board = (CellState[,])board.Clone();
+        }
+
+        public BoardSnapShot FillWith(IReadOnlyCollection<BoardPosition> filled)
+        {
+            if (filled == null || filled.Count == 0) return this;
+
+            var newBoard = (CellState[,])_board.Clone();
+            foreach (BoardPosition pos in filled)
+            {
+                if (!this.Contains(pos))
+                    throw new ArgumentOutOfRangeException(nameof(filled), $"Cannot fill outside of the board: {pos}");
+
+                newBoard[pos.x, pos.y] = CellState.Filled;
+            }
+
+            return new BoardSnapShot(GridSize, newBoard);
+        }
+
+        public BoardSnapShot ClearWith(IReadOnlyCollection<BoardPosition> cleared)
+        {
+            if (cleared == null || cleared.Count == 0) return this;
+
+            var newBoard = (CellState[,])_board.Clone();
+            foreach (BoardPosition pos in cleared)
+            {
+                if (!this.Contains(pos))
+                    throw new ArgumentOutOfRangeException(nameof(cleared), $"Cannot clear outside of the board: {pos}");
+
+                newBoard[pos.x, pos.y] = CellState.Empty;
+            }
+
+            return new BoardSnapShot(GridSize, newBoard);
         }
     }
 }

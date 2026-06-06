@@ -32,7 +32,7 @@ namespace Script.Core
             int newScore = _session.Score.Score;
 
             int reward = newScore - oldScore;
-            bool done = _session.State == GameState.GameOver;
+            bool done = _session.Status == GameStatus.GameOver;
             return new StepResult(GetObservation(), reward, done);
         }
     }

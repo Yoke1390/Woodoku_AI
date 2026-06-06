@@ -65,7 +65,7 @@ namespace Script.Unity
 
         private IEnumerator Run()
         {
-            while (_session.State == GameState.Playing)
+            while (_session.Status == GameStatus.Playing)
             {
                 List<AgentAction> legal = _session.GetLegalActions().ToList();
                 if (legal.Count == 0)
