@@ -83,9 +83,34 @@ in the logic layer is a compile error.
 (`WoodokuGameManager.HandleEndBlockMoveRequest`) → `BoardUI` screen-to-board conversion →
 `GameSession.TryPlaceBlock` → `CellUpdate` / `ScoreUpdate` events → UI redraw.
 
+## Ongoing redesign — Functional Core / Imperative Shell (active work)
+
+The data/logic layer above is **mid-migration**. The current code still has the mutable
+`BoardData` / `HandManager` / `ScoreManager`, but the agreed target (ROADMAP §9, full plan with
+diagrams in `Review/review4_functional_core_redesign.md`) collapses them into:
+
+- **One immutable state** `GameStateData` (board + hand + streak + score + `Rng` + `GameStatus`),
+  with `Hand` and `Rng` (functional RNG replacing `System.Random`) as immutable value types, and
+  `RuleSet` (grid size / slot count / shape pool) as immutable *config* (not state).
+- **One pure transition** `GameRules`, split into the deterministic `ApplyPlacement(state, action)`
+  (board place+clear → score+streak → hand-slot consume) and the stochastic
+  `RefillIfNeeded(state, ruleSet)` (draws from `Rng` only when the hand empties). `BoardRule` /
+  `ScoreRule` / `BoardSimulator` survive as the pure leaf calculators it composes.
+- **A thin shell** `GameSession` holding a single `GameStateData _state`, whose `TryPlaceBlock`
+  runs the pure transition then **reconstructs events from the old→new state diff**
+  (`RaiseDiffEvents`) — the one and only event source. Event signatures stay the same, so the UI
+  is untouched.
+
+The point: **human play and AI look-ahead call the same `GameRules.ApplyPlacement`** (DRY). The AI
+never receives `Rng`, so it cannot peek at future pieces — refill is the only stochastic seam.
+When editing Core, prefer the target shape; don't add new logic to the soon-to-be-deleted managers.
+
 ## Notable in-progress state
 
-- The strong AI agent is the main remaining piece. The environment harness (`WoodokuEnv`,
+- **Core redesign (ROADMAP §9, `Review/review4_*`) is the active task** — unifying human play and
+  AI simulation onto one immutable state + one pure transition (see the section above). This builds
+  the permanent look-ahead foundation the strong agent needs.
+- The strong AI agent is the main remaining feature. The environment harness (`WoodokuEnv`,
   `IWoodokuAgent`, `RandomAgent`, `AgentRunner`) is built, but a competitive agent (features +
   linear eval + (Noisy) CEM, then probability-aware expectimax/MCTS) is not. The plan lives in
   `Review/review3_ai_implementation.md` and ROADMAP §8.4.

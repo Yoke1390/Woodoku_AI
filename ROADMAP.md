@@ -176,7 +176,46 @@ ROADMAP 冒頭の「AI環境として機能させる」最終目標に向けた�
 - [x] 🎯 Gym 風環境ラッパー `WoodokuEnv`: `Reset(seed) : Observation` / `Step(AgentAction) : StepResult`（`reward = スコア差分`, `done = GameOver`）/ `LegalActions`。`Observation`（盤面+手札）・`StepResult`（観測+報酬+done）は `readonly struct`。
 - [x] 🎯 エージェント抽象 `IWoodokuAgent.SelectAction(Observation, legalActions) : AgentAction` と、ベースライン `RandomAgent`（合法手から一様ランダム）。
 - [x] 🎯 可視化実行 `AgentRunner`(MonoBehaviour): 人間入力を無効化し、コルーチンで `stepDelay` 間引きしながらエージェントの自動プレイを既存 UI に描画。シーンは `Assets/Scenes/AgentRunner.unity`。
-- [ ] 🎯 強いエージェント本体（特徴量＋線形評価、(Noisy) CEM、確率を考慮した expectimax / MCTS）。方針は `Review/review3_ai_implementation.md`。
+- [ ] 🎯 強いエージェント本体（特徴量＋線形評価、(Noisy) CEM、確率を考慮した expectimax / MCTS）。方針は `Review/review3_ai_implementation.md`。先読みの足場は §9 の再設計で恒久化する。
+
+---
+
+## 9. Core 再設計：Functional Core / Imperative Shell の貫徹（進行中）
+
+> 📐 詳細な設計図（現状/変更後の Mermaid）・ディレクトリ構成の変化・実装手順は `Review/review4_functional_core_redesign.md`。
+
+§8 までで純粋層（`BoardRule` / `ScoreRule` / `BoardSimulator`）を導入したが、**遷移ロジックが「実プレイ（mutate）」と「シミュレーション（pure）」で二重化**し、`SimState` が手札・乱数を持たず連鎖できない問題が出た。これを解消するため、**状態を 1 つの不変値に、遷移を 1 つの純粋関数に集約**し、人間プレイと AI シミュレーションを単一経路に統合（DRY）する。
+
+### 方針（確定 2026-06-06）
+
+- 規模：**全面刷新**（可変クラス `BoardData` / `HandManager` / `ScoreManager` を廃止）。
+- 乱数：`Rng` を**状態に含め**、遷移を決定論パート（`ApplyPlacement`）と確率パート（`RefillIfNeeded`）に**2 段分割**。AI は `Rng` を受け取らず未来のピースを覗けない。
+
+### 9.1 純粋な土台（不変値）
+
+- [ ] 🔧 `Rng`（関数型乱数、`Next` が `(次Rng, 値)` を返す。`System.Random` を置換）。
+- [ ] 🔧 `Hand`（不変。`Consume` / `With` で新インスタンス。`IReadOnlyHands` 実装）。
+- [ ] 🔧 `RuleSet`（不変設定：GridSize / NHandSlots / ShapePool。**公開情報**）。
+- [ ] 🔧 `GameStateData`（旧 `SimState` を拡張：Board + Hand + Streak + Score + Rng + Status）。`GameState` enum → `GameStatus` 改名。
+
+### 9.2 唯一の純粋遷移
+
+- [ ] 🔧 `GameRules.ApplyPlacement(state, action) : (GameStateData, PlacementResult)` — 決定論・乱数なし（配置→消去→加点→streak→手札消費→Status）。`BoardSimulator` / `BoardRule` / `ScoreRule` を合成。
+- [ ] 🔧 `GameRules.RefillIfNeeded(state, ruleSet) : GameStateData` — 手札が空のときだけ `Rng` で補充。
+- [ ] 🔧 `GameRules.LegalActions(state)` / `IsGameOver(state)` を純粋関数化（旧 `GameSession.GetLegalActions` を移植）。`WoodokuSimulator` を `GameRules` へ昇格・吸収。
+
+### 9.3 Imperative Shell
+
+- [ ] 🔧 `GameSession` をシェルに再実装：可変は `GameStateData _state` の 1 個のみ。`TryPlaceBlock` = `ApplyPlacement` → `RefillIfNeeded` → `RaiseDiffEvents(old, next)` → 差し替え。
+- [ ] 🔧 `RaiseDiffEvents`：旧/新状態の差分から既存署名のイベントを再構成（盤面セル → `CellUpdate`、手札スロット → `HandBlockConsumed/Generated` + `HandSettled`、スコア → `ScoreUpdate`、Status → `GameOver`）。発火源を 1 か所に集約。
+- [ ] 🔧 イベント分離 IF：board と対称に `IHandEventPublisher` / `IScoreEventPublisher` を新設し、`IReadOnlyHands` / `IReadOnlyScore` を純粋読み取り化。
+
+### 9.4 後始末と接続
+
+- [ ] 🔧 旧クラス削除：`BoardData` / `HandManager` / `ScoreManager` / `WoodokuSimulator` / `SimState` / `PlacementPreview`（`.meta` ごと）。
+- [ ] 🔧 `WoodokuEnv` / `Agents` を `GameRules`・`GameStateData` へ向け直し（`Observation` は状態から生成、`Rng` は含めない）。
+- [ ] 🎯 動作確認：MainScene（人間）/ AgentRunner（Random）で配置・消去・streak・補充・スコア・GameOver の回帰、イベント差分の抜け、seed 固定の再現性。
+- [ ] 🔧 これに伴い §5 の「ハードコード乱数シード整理」は `Rng.FromSeed` + `RefillIfNeeded` 経路へ統合して解消する。
 
 ---
 
