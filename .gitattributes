@@ -1,0 +1,9 @@
+# Linguist language statistics
+# -----------------------------------------------------------------------------
+# TextMesh Pro is a third-party package bundled with Unity. Its shader files
+# (.shader / .hlsl / .cginc) outweigh the project's own C# by byte count and
+# make GitHub mislabel the primary language as ShaderLab. Mark them as vendored
+# so language stats reflect the actual C# codebase.
+# (Pattern uses '*' to match the space in "TextMesh Pro"; literal spaces in a
+#  pattern are not supported by gitattributes.)
+Woodoku_Unity/Assets/TextMesh*Pro/** linguist-vendored
